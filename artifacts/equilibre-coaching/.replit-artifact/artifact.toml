@@ -1,6 +1,6 @@
 kind = "web"
 previewPath = "/"
-title = "Équilibre Coaching"
+title = "ORANE | Coach thérapeutique"
 version = "1.0.0"
 id = "artifacts/equilibre-coaching"
 router = "path"
