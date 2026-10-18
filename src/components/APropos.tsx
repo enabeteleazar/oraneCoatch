@@ -12,17 +12,26 @@ import { Award, GraduationCap, Leaf } from "lucide-react";
  * - Photo : déposez le fichier (WebP ou JPG, < 200 Ko) dans `public/images/` et renseignez
  *   `photo: "images/nom-du-fichier.webp"`. N'utilisez pas d'image générée ou d'archive à la place.
  */
+/**
+ * Interrupteur de la section : `true` l'affiche (si au moins un champ de `profil` est renseigné),
+ * `false` la masque complètement, même si `profil` est rempli.
+ */
+const AFFICHER_A_PROPOS = true;
+
 const profil = {
-  nom: null as string | null, // ex. "Prénom Nom"
-  titre: null as string | null, // ex. l'intitulé exact de votre activité
-  photo: null as string | null, // ex. "images/orane.webp"
-  photoAlt: "Portrait de votre accompagnante ou accompagnant",
-  bio: [] as string[], // un ou deux courts paragraphes : parcours, ce qui vous a menée ou mené ici
+  nom: "Orane Marie",
+  titre: "Thérapeute",
+  photo: "images/aboutMe.jpg", // fichier déposé dans public/images/
+  photoAlt: "Portrait de ORANE",
+  bio: [
+    "J'accompagne des personnes qui traversent un moment difficile : fatigue, sentiment d'être dépassé(e), besoin d'être entendu(e).",
+    "Je propose un espace d'écoute bienveillant et confidentiel, pour vous aider à retrouver votre équilibre et votre sérénité.",
+    "Mon approche s'appuie sur la conviction profonde que vous possédez déjà toutes les ressources nécessaires pour atteindre votre équilibre. Mon rôle est de vous aider à mettre en lumière ce potentiel.",
+  ],
   formations: [] as string[], // ex. "Intitulé du diplôme, organisme, année"
   certifications: [] as string[], // ex. "Intitulé de la certification, organisme, année"
-  methode: [] as string[], // un ou deux paragraphes : votre façon de travailler, vos outils
-};
-
+  methode: [] as String[],
+}; 
 const fade = {
   hidden: { opacity: 0, y: 22 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" as const } },
@@ -45,6 +54,8 @@ function Liste({ titre, items, icon: Icon }: { titre: string; items: string[]; i
 }
 
 export default function APropos() {
+  if (!AFFICHER_A_PROPOS) return null;
+
   const aDuContenu =
     Boolean(profil.nom || profil.titre || profil.photo) ||
     profil.bio.length > 0 ||
