@@ -136,7 +136,9 @@ export default function MentionLegale() {
                 Conformément au Règlement général sur la protection des données (RGPD) et à la loi
                 « Informatique et Libertés », vous disposez d'un droit d'accès, de rectification, d'effacement,
                 d'opposition, de limitation et de portabilité de vos données. Pour l'exercer, contactez l'éditeur à
-                l'adresse indiquée à l'article 1. Vous pouvez également introduire une réclamation auprès de la CNIL
+                l'adresse indiquée à l'article 1. Pour plus de détails, consultez la{" "}
+                <Link href="/politique-de-confidentialite" className="text-primary underline underline-offset-4">politique de confidentialité</Link>.
+                Vous pouvez également introduire une réclamation auprès de la CNIL
                 (<a href="https://www.cnil.fr" target="_blank" rel="noreferrer" className="text-primary underline underline-offset-4">cnil.fr</a>).
               </p>
             </Section>

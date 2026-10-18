@@ -275,6 +275,7 @@ export default function Home() {
             <a href={phone} className="transition-colors hover:text-primary">06 86 54 47 66</a>
             <a href={externalSite} target="_blank" rel="noreferrer" className="transition-colors hover:text-primary">orane-coach-therapeutique.fr</a>
             <Link href="/mentions-legales" className="transition-colors hover:text-primary">Mentions légales</Link>
+            <Link href="/politique-de-confidentialite" className="transition-colors hover:text-primary">Politique de confidentialité</Link>
           </div>
           <a href="#accueil" className="text-xs text-foreground/55 transition-colors hover:text-primary">Retour en haut ↑</a>
         </div>
