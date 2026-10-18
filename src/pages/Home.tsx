@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import EncartUrgence from "@/components/EncartUrgence";
 import PublicEtSeance from "@/components/PublicEtSeance";
+import APropos from "@/components/APropos";
 import { motion } from "framer-motion";
 import { ArrowDown, ArrowRight, ArrowUpRight, Heart, Leaf, Menu, Phone, X } from "lucide-react";
 import heroImg from "@/assets/images/hero.png";
@@ -171,6 +172,8 @@ export default function Home() {
             </motion.div>
           </div>
         </section>
+
+        <APropos />
 
         <PublicEtSeance />
 
