@@ -115,6 +115,12 @@ export default function PolitiqueConfidentialite() {
                   <strong className={strong}>Facturation et comptabilité.</strong> Identité, adresse, montants des
                   séances. Base légale : obligation légale.
                 </li>
+                <li>
+                  <strong className={strong}>Témoignages (facultatif).</strong> Si vous acceptez de publier un
+                  témoignage sur ce site : votre prénom ou initiale et le texte que vous avez validé. Base légale :
+                  votre consentement, que vous pouvez retirer à tout moment en nous écrivant, ce qui entraîne le
+                  retrait du témoignage.
+                </li>
               </ul>
               <p>
                 Au cours des séances, vous pouvez être amené(e) à évoquer des éléments très personnels, notamment

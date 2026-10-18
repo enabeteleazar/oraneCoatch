@@ -3,11 +3,13 @@ import { Link } from "wouter";
 import EncartUrgence from "@/components/EncartUrgence";
 import PublicEtSeance from "@/components/PublicEtSeance";
 import APropos from "@/components/APropos";
+import CadreDeontologique from "@/components/CadreDeontologique";
+import Temoignages from "@/components/Temoignages";
 import { motion } from "framer-motion";
 import { ArrowDown, ArrowRight, ArrowUpRight, Heart, Leaf, Menu, Phone, X } from "lucide-react";
 import heroImg from "@/assets/images/hero.png";
 
-const phone = "tel:+33686544766";
+const phone = "tel:0686544766";
 const externalSite = "https://orane-coach-therapeutique.fr";
 
 const values = [
@@ -177,6 +179,8 @@ export default function Home() {
 
         <PublicEtSeance />
 
+        <CadreDeontologique />
+
         <section id="formules" className="bg-[#e9e7dc] py-20 md:py-28">
           <div className="mx-auto max-w-[1120px] px-6 md:px-10">
             <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
@@ -219,6 +223,8 @@ export default function Home() {
             </a>
           </div>
         </section>
+
+        <Temoignages />
 
         <section id="partenariat" className="relative bg-[#747b5c] px-6 py-20 text-[#f8f5eb] md:px-10 md:py-24">
           <div className="absolute inset-y-0 right-0 hidden w-[38%] overflow-hidden opacity-20 md:block">

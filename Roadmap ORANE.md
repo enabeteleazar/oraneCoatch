@@ -2,8 +2,6 @@
 
 Site ORANE – Coach thérapeutique · Mise à jour du 18 octobre 2026
 
-Les phases 1 et 2 sont les plus importantes : sans informations légales complètes ni présentation de la personne, le site manque de crédibilité.
-
 ## Phase 1 : Légal et conformité
 
 - [x] Créer la page de mentions légales avec lien dans le footer
