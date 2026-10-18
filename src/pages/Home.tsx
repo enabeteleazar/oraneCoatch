@@ -225,9 +225,9 @@ export default function Home() {
               <h2 className="display-serif text-4xl leading-tight md:text-[3.5rem]">Un accompagnement en partenariat avec <span className="italic">ADOMSAP</span></h2>
               <p className="mt-5 max-w-[590px] text-sm leading-[1.9] text-[#f0eedf]/85">Un cadre de présence et d'écoute pour vous aider à traverser le moment, avec douceur et respect de votre rythme.</p>
             </div>
-            <a href="#contact" className="group inline-flex shrink-0 items-center gap-3 self-start rounded-full border border-[#e5e3d1]/55 px-6 py-4 text-sm text-[#fbf8ef] transition-colors hover:bg-[#f8f5eb] hover:text-primary md:self-center">
-              En parler <ArrowUpRight size={16} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-            </a>
+            <Link href="/partenariat-adomsap" className="group inline-flex shrink-0 items-center gap-3 self-start rounded-full border border-[#e5e3d1]/55 px-6 py-4 text-sm text-[#fbf8ef] transition-colors hover:bg-[#f8f5eb] hover:text-primary md:self-center">
+              En savoir plus <ArrowUpRight size={16} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </Link>
           </div>
         </section>
 
@@ -273,7 +273,8 @@ export default function Home() {
             <span className="text-[.58rem] tracking-[.13em] text-muted-foreground">COACH THÉRAPEUTIQUE</span>
           </a>
           <div className="flex flex-col gap-3 text-xs text-foreground/65 sm:flex-row sm:items-center sm:gap-7">
-            <span>Partenariat avec ADOMSAP</span>
+            <Link href="/partenariat-adomsap" className="transition-colors hover:text-primary">Partenariat avec ADOMSAP</Link>
+            <a href={phone} className="transition-colors hover:text-primary">06 86 54 47 66</a>
             <a href={externalSite} target="_blank" rel="noreferrer" className="transition-colors hover:text-primary">orane-coach-therapeutique.fr</a>
             <Link href="/mentions-legales" className="transition-colors hover:text-primary">Mentions légales</Link>
             <Link href="/politique-de-confidentialite" className="transition-colors hover:text-primary">Politique de confidentialité</Link>

@@ -6,6 +6,7 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import MentionLegale from "@/components/mentionLegale";
 import PolitiqueConfidentialite from "@/components/politiqueConfidentialite";
+import PartenariatAdomsap from "@/components/partenariatAdomsap";
 
 const queryClient = new QueryClient();
 
@@ -15,6 +16,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/mentions-legales" component={MentionLegale} />
       <Route path="/politique-de-confidentialite" component={PolitiqueConfidentialite} />
+      <Route path="/partenariat-adomsap" component={PartenariatAdomsap} />
       <Route component={NotFound} />
     </Switch>
   );

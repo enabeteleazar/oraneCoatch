@@ -15,7 +15,7 @@ Les phases 1 et 2 sont les plus importantes : sans informations légales complè
 ## Phase 2 : Confiance et contenu
 
 - [ ] Ajouter une section « À propos » (nom, photo, formation, certifications, méthode)
-- [ ] Expliquer le partenariat ADOMSAP (ce que c'est, lien éventuel)
+- [x] Expliquer le partenariat ADOMSAP (ce que c'est, lien éventuel)
 - [ ] Préciser le public cible et le déroulé d'une séance
 - [ ] Confirmer la durée et le tarif de la séance individuelle (1 h 30 pour 60 € sur le site, 1 h dans l'ancien code)
 - [ ] Ajouter une FAQ
