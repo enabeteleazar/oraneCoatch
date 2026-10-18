@@ -6,8 +6,9 @@ import { ArrowLeft, Leaf } from "lucide-react";
  * ⚠️ À COMPLÉTER / À VALIDER avant mise en ligne.
  * - Les valeurs "[À compléter]" sont des informations que seul l'exploitant connaît.
  * - Les durées de conservation sont des valeurs usuelles proposées : à confirmer.
- * - L'article 4 (Google Fonts) décrit l'état actuel du site. Une fois les polices
- *   auto-hébergées, supprimer cet article et la mention correspondante à l'article 3.
+ * - Les polices sont auto-hébergées : aucun élément externe n'est chargé par le site.
+ *   Si un service tiers est ajouté un jour (statistiques, carte, vidéo, etc.), mettre à jour
+ *   l'article 3 et ajouter un article dédié.
  */
 const infos = {
   responsable: "ORANE – Coach thérapeutique",
@@ -126,26 +127,13 @@ export default function PolitiqueConfidentialite() {
             <Section title="3. Ce que ce site ne fait pas">
               <p>
                 Ce site ne contient aucun formulaire de collecte, aucun outil de mesure d'audience, aucune publicité
-                et ne dépose aucun cookie de suivi. Vous n'avez donc aucun bandeau de consentement à renseigner.
-                Le seul élément externe chargé par le site est décrit à l'article suivant.
+                et ne dépose aucun cookie de suivi. Les polices de caractères sont hébergées avec le site : votre
+                navigateur ne contacte aucun service tiers pour les afficher. Vous n'avez donc aucun bandeau de
+                consentement à renseigner.
               </p>
             </Section>
 
-            <Section title="4. Polices de caractères (Google Fonts)">
-              <p>
-                Pour afficher ses polices, le site les charge actuellement depuis les serveurs de Google
-                (fonts.googleapis.com). Lors de votre visite, votre navigateur envoie donc à Google des
-                informations techniques, dont votre adresse IP. Ce traitement n'est utilisé ni pour vous identifier
-                ni pour vous suivre sur ce site. Il peut impliquer un traitement de données hors de l'Union
-                européenne. Pour en savoir plus :{" "}
-                <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer" className={ext}>
-                  politique de confidentialité de Google
-                </a>
-                .
-              </p>
-            </Section>
-
-            <Section title="5. Qui peut accéder à vos données ?">
+            <Section title="4. Qui peut accéder à vos données ?">
               <p>
                 Vos données sont destinées à l'exploitant du site. Elles ne sont ni vendues, ni louées, ni cédées à
                 des fins commerciales.
@@ -157,7 +145,7 @@ export default function PolitiqueConfidentialite() {
               <p>{infos.partenaire}</p>
             </Section>
 
-            <Section title="6. Combien de temps sont-elles conservées ?">
+            <Section title="5. Combien de temps sont-elles conservées ?">
               <ul className="list-disc space-y-2 pl-5">
                 <li><strong className={strong}>Demande de contact sans suite :</strong> 3 ans après le dernier échange.</li>
                 <li><strong className={strong}>Données de suivi d'accompagnement :</strong> pendant la durée de l'accompagnement, puis [À compléter : durée] après la dernière séance.</li>
@@ -166,7 +154,7 @@ export default function PolitiqueConfidentialite() {
               <p>À l'issue de ces délais, les données sont supprimées ou anonymisées.</p>
             </Section>
 
-            <Section title="7. Comment sont-elles protégées ?">
+            <Section title="6. Comment sont-elles protégées ?">
               <p>
                 L'exploitant met en œuvre des mesures raisonnables pour protéger vos données contre l'accès, la
                 perte ou la divulgation non autorisés [À vérifier et compléter : accès restreint, appareils
@@ -175,7 +163,7 @@ export default function PolitiqueConfidentialite() {
               </p>
             </Section>
 
-            <Section title="8. Quels sont vos droits ?">
+            <Section title="7. Quels sont vos droits ?">
               <p>Vous disposez à tout moment des droits suivants sur vos données :</p>
               <ul className="list-disc space-y-1 pl-5">
                 <li>accès et copie de vos données ;</li>
@@ -200,7 +188,7 @@ export default function PolitiqueConfidentialite() {
               </p>
             </Section>
 
-            <Section title="9. Évolution de cette politique">
+            <Section title="8. Évolution de cette politique">
               <p>
                 Cette politique peut être mise à jour, notamment si le site évolue (par exemple l'ajout d'un
                 formulaire de contact). La date de dernière mise à jour figure en haut de cette page.
