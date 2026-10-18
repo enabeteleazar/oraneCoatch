@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import EncartUrgence from "@/components/EncartUrgence";
+import PublicEtSeance from "@/components/PublicEtSeance";
 import { motion } from "framer-motion";
 import { ArrowDown, ArrowRight, ArrowUpRight, Heart, Leaf, Menu, Phone, X } from "lucide-react";
 import heroImg from "@/assets/images/hero.png";
@@ -170,6 +171,8 @@ export default function Home() {
             </motion.div>
           </div>
         </section>
+
+        <PublicEtSeance />
 
         <section id="formules" className="bg-[#e9e7dc] py-20 md:py-28">
           <div className="mx-auto max-w-[1120px] px-6 md:px-10">
