@@ -6,17 +6,17 @@ import APropos from "@/components/APropos";
 import CadreDeontologique from "@/components/CadreDeontologique";
 import Temoignages from "@/components/Temoignages";
 import { motion } from "framer-motion";
-import { ArrowDown, ArrowRight, ArrowUpRight, Heart, Leaf, Menu, Phone, X } from "lucide-react";
+import { ArrowDown, ArrowRight, ArrowUpRight, Ear, HandHeart, Heart, Leaf, Menu, Phone, Sprout, X } from "lucide-react";
 import heroImg from "@/assets/images/hero.png";
 
-const phone = "tel:0686544766";
+const phone = "tel:+33686544766";
 const externalSite = "https://orane-coach-therapeutique.fr";
 
 const values = [
-  { number: "01", title: "Écoute", text: "Un temps pour déposer ce qui pèse, avec une présence attentive et sans jugement.", icon: Heart },
-  { number: "02", title: "Soutien", text: "Un espace où vous pouvez vous sentir accueilli(e), entendu(e) et accompagné(e).", icon: Leaf },
+  { number: "01", title: "Écoute", text: "Un temps pour déposer ce qui pèse, avec une présence attentive et sans jugement.", icon: Ear },
+  { number: "02", title: "Soutien", text: "Un espace où vous pouvez vous sentir accueilli(e), entendu(e) et accompagné(e).", icon: HandHeart },
   { number: "03", title: "Bienveillance", text: "Votre histoire, vos émotions et votre rythme ont toute leur place.", icon: Heart },
-  { number: "04", title: "Évolution", text: "Pas à pas, trouver votre manière d'avancer, sans avoir à tout résoudre aujourd'hui.", icon: Leaf },
+  { number: "04", title: "Évolution", text: "Pas à pas, trouver votre manière d'avancer, sans avoir à tout résoudre aujourd'hui.", icon: Sprout },
 ];
 
 const fade = {
@@ -104,7 +104,7 @@ export default function Home() {
                   <span className="h-8 w-8 rounded-full border-2 border-[#eee9dc] bg-[#d5c5a8]" />
                   <span className="h-8 w-8 rounded-full border-2 border-[#eee9dc] bg-[#788265]" />
                 </span>
-                <span>À votre écoute, à votre rythme</span>
+                <span>À votre rythme, en toute confiance</span>
               </motion.div>
             </div>
           </div>
@@ -138,7 +138,7 @@ export default function Home() {
             <div className="mb-14 max-w-[690px]">
               <p className="eyebrow mb-5 text-primary">Une présence, pas une méthode toute faite</p>
               <h2 className="display-serif text-5xl leading-[.99] md:text-[5rem]">Ici, votre histoire <span className="italic text-primary">a sa place.</span></h2>
-              <p className="mt-7 max-w-[550px] text-base leading-[1.9] text-foreground/70">Un espace d'écoute chaleureux, pour accueillir ce qui est là. Pas de jugement, pas d'injonction à aller mieux vite. Seulement un temps pour vous.</p>
+              <p className="mt-7 max-w-[550px] text-base leading-[1.9] text-foreground/70">Un espace chaleureux pour accueillir ce qui est là. Pas d'injonction à aller mieux vite. Seulement un temps pour vous.</p>
             </div>
             <div className="grid gap-px border-y border-primary/20 sm:grid-cols-2 lg:grid-cols-4">
               {values.map(({ number, title, text, icon: Icon }, index) => (

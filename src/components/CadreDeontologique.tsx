@@ -22,7 +22,7 @@ const engagements = [
     texte: "Vous décidez du rythme, de ce dont nous parlons et de la poursuite de l'accompagnement. Vous pouvez l'arrêter à tout moment.",
   },
   {
-    titre: "Une écoute sans jugement",
+    titre: "Aucun jugement",
     texte: "Votre histoire et vos émotions ont leur place, sans avoir à vous justifier.",
   },
   {
