@@ -5,6 +5,7 @@ import PublicEtSeance from "@/components/PublicEtSeance";
 import APropos from "@/components/APropos";
 import CadreDeontologique from "@/components/CadreDeontologique";
 import Temoignages from "@/components/Temoignages";
+import Faq from "@/components/Faq";
 import { motion } from "framer-motion";
 import { ArrowDown, ArrowRight, ArrowUpRight, Ear, HandHeart, Heart, Leaf, Menu, Phone, Sprout, X } from "lucide-react";
 import heroImg from "@/assets/images/hero.png";
@@ -242,6 +243,8 @@ export default function Home() {
             </Link>
           </div>
         </section>
+
+        <Faq />
 
         <section id="contact" className="relative overflow-hidden bg-[#f2eee4] py-20 md:py-28">
           <div className="pointer-events-none absolute -left-24 bottom-[-150px] h-[340px] w-[340px] rounded-full bg-[#e4e1d2] md:h-[480px] md:w-[480px]" />
