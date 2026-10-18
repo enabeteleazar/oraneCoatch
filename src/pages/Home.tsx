@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
+import EncartUrgence from "@/components/EncartUrgence";
 import { motion } from "framer-motion";
 import { ArrowDown, ArrowRight, ArrowUpRight, Heart, Leaf, Menu, Phone, X } from "lucide-react";
 import heroImg from "@/assets/images/hero.png";
@@ -261,6 +262,7 @@ export default function Home() {
             </motion.div>
           </div>
         </section>
+        <EncartUrgence />
       </main>
 
       <footer className="bg-[#e7e4d8]">
@@ -272,7 +274,6 @@ export default function Home() {
           </a>
           <div className="flex flex-col gap-3 text-xs text-foreground/65 sm:flex-row sm:items-center sm:gap-7">
             <span>Partenariat avec ADOMSAP</span>
-            <a href={phone} className="transition-colors hover:text-primary">06 86 54 47 66</a>
             <a href={externalSite} target="_blank" rel="noreferrer" className="transition-colors hover:text-primary">orane-coach-therapeutique.fr</a>
             <Link href="/mentions-legales" className="transition-colors hover:text-primary">Mentions légales</Link>
             <Link href="/politique-de-confidentialite" className="transition-colors hover:text-primary">Politique de confidentialité</Link>

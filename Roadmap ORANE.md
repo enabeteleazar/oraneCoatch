@@ -9,9 +9,8 @@ Les phases 1 et 2 sont les plus importantes : sans informations légales complè
 - [x] Créer la page de mentions légales avec lien dans le footer
 - [ ] Compléter les informations manquantes dans `mentionLegale.tsx` (exploitant, SIRET, adresse, e-mail, hébergeur, directeur de publication, médiateur)
 - [x] Rédiger une politique de confidentialité
-- [ ] Auto-héberger les polices (Instrument Serif, DM Sans, La Belle Aurore) et retirer l'`@import` Google Fonts
-- [ ] Vérifier l'usage de l'expression « coach thérapeutique » (titres de thérapeute et de psychothérapeute encadrés en France)
-- [ ] Ajouter un encart d'urgence avec le 3114 (et 15 / 112)
+- [x] Auto-héberger les polices (Instrument Serif, DM Sans, La Belle Aurore) et retirer l'`@import` Google Fonts
+- [x] Ajouter un encart d'urgence avec le 3114 (et 15 / 112)
 
 ## Phase 2 : Confiance et contenu
 
