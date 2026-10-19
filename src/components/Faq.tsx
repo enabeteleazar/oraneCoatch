@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { Phone, Plus } from "lucide-react";
+import { Tarif, useTarifs, type TarifsAffichage } from "@/lib/tarifs";
 
 /**
  * ⚠️ À RELIRE avant mise en ligne.
@@ -17,7 +18,7 @@ const telephoneHref = "tel:+33686544766";
 
 const lien = "text-primary underline underline-offset-4";
 
-const questions: { question: string; reponse: ReactNode }[] = [
+const construireQuestions = (t: TarifsAffichage): { question: string; reponse: ReactNode }[] => [
   {
     question: "À qui s'adresse cet accompagnement ?",
     reponse: (
@@ -40,8 +41,9 @@ const questions: { question: string; reponse: ReactNode }[] = [
     question: "Que se passe-t-il lors de la séance découverte ?",
     reponse: (
       <p>
-        C'est un temps de 30 minutes, offert, pour faire connaissance, dire ce qui vous amène si vous le souhaitez et
-        poser vos questions. Vous voyez ensuite si cet accompagnement vous convient. Le déroulé complet est détaillé
+        C'est un temps de <Tarif pret={t.pret}>{t.decouverte.duree}</Tarif>,{" "}
+        <Tarif pret={t.pret}>{t.decouverte.offerte ? "offert" : `au tarif de ${t.decouverte.prix}`}</Tarif>, pour faire
+        connaissance, dire ce qui vous amène si vous le souhaitez et poser vos questions. Vous voyez ensuite si cet accompagnement vous convient. Le déroulé complet est détaillé
         dans <a href="#deroule" className={lien}>« Une séance, pas à pas »</a>.
       </p>
     ),
@@ -50,14 +52,18 @@ const questions: { question: string; reponse: ReactNode }[] = [
     question: "Combien de temps dure une séance, et combien coûte-t-elle ?",
     reponse: (
       <p>
-        Une séance individuelle dure 1 h 30. Le détail des tarifs (séance à l'unité, packs de 5 et de 10 séances) se
+        Une séance individuelle dure <Tarif pret={t.pret}>{t.seance.duree}</Tarif>. Le détail des tarifs (séance à l'unité, packs de 5 et de 10 séances) se
         trouve dans la section <a href="#formules" className={lien}>Formules</a>, et peut être adapté après discussion.
       </p>
     ),
   },
   {
     question: "Les séances peuvent-elles avoir lieu à mon domicile ?",
-    reponse: <p>Oui, des visites à domicile sont possibles, avec un supplément de 10 € par séance.</p>,
+    reponse: (
+      <p>
+        <Tarif pret={t.pret}>{t.domicile.reponse}</Tarif>
+      </p>
+    ),
   },
   {
     question: "Est-ce une thérapie ? Cela remplace-t-il un suivi médical ou psychologique ?",
@@ -117,7 +123,9 @@ const fade = {
 };
 
 export default function Faq() {
+  const tarifs = useTarifs();
   if (!AFFICHER_FAQ) return null;
+  const questions = construireQuestions(tarifs);
 
   return (
     <section id="faq" aria-labelledby="faq-titre" className="bg-[#f7f4ec] py-20 md:py-28">

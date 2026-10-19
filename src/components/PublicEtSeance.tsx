@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Battery, Compass, Ear, Phone } from "lucide-react";
+import { Tarif, useTarifs, type TarifsAffichage } from "@/lib/tarifs";
 
 /**
  * ⚠️ À RELIRE / À COMPLÉTER avant mise en ligne.
@@ -27,7 +28,7 @@ const profils = [
   { icon: Ear, titre: "Incompris(e)", texte: "Vous aimeriez être entendu(e), sans avoir à vous justifier." },
 ];
 
-const etapes = [
+const construireEtapes = (t: TarifsAffichage) => [
   {
     numero: "01",
     titre: "Un premier contact",
@@ -38,13 +39,13 @@ const etapes = [
     numero: "02",
     titre: "La séance découverte",
     texte: "Un temps pour faire connaissance, dire ce qui vous amène si vous le souhaitez et poser vos questions. Vous voyez ensuite si cet accompagnement vous convient.",
-    meta: "30 minutes · offerte",
+    meta: `${t.decouverte.duree} · ${t.decouverte.offerte ? "offerte" : t.decouverte.prix}`,
   },
   {
     numero: "03",
     titre: "La séance individuelle",
     texte: "Un temps d'écoute pour déposer ce qui pèse, faire émerger vos propres repères et choisir le pas suivant. Il n'y a ni parcours imposé ni bonne façon de faire.",
-    meta: "1 h 30",
+    meta: t.seance.duree,
   },
   {
     numero: "04",
@@ -55,6 +56,8 @@ const etapes = [
 ];
 
 export default function PublicEtSeance() {
+  const tarifs = useTarifs();
+  const etapes = construireEtapes(tarifs);
   return (
     <section id="deroule" className="bg-[#f7f4ec] py-20 md:py-28">
       <div className="mx-auto max-w-[1120px] px-6 md:px-10">
@@ -116,7 +119,7 @@ export default function PublicEtSeance() {
             >
               <span className="font-serif text-2xl italic text-primary/70">{numero}</span>
               <h3 className="display-serif mt-6 text-3xl leading-tight">{titre}</h3>
-              <p className="mt-2 text-xs font-medium tracking-[.08em] text-primary">{meta}</p>
+              <p className="mt-2 text-xs font-medium tracking-[.08em] text-primary"><Tarif pret={tarifs.pret}>{meta}</Tarif></p>
               <p className="mt-3 text-sm leading-[1.85] text-foreground/70">{texte}</p>
             </motion.li>
           ))}

@@ -15,7 +15,7 @@ Site ORANE – Coach thérapeutique · Mise à jour du 18 octobre 2026
 - [x] Ajouter une section « À propos » (nom, photo, formation, certifications, méthode)
 - [x] Expliquer le partenariat ADOMSAP (ce que c'est, lien éventuel)
 - [x] Préciser le public cible et le déroulé d'une séance
-- [ ] Confirmer la durée et le tarif de la séance individuelle (1 h 30 pour 60 € sur le site, 1 h dans l'ancien code)
+- [x] Confirmer la durée et le tarif de la séance individuelle (creation d'une pade admin pour gestion des tarifs)
 - [x] Ajouter une FAQ
 - [x] Ajouter de vrais témoignages (avec accord des personnes) et un cadre déontologique
 - [x] Corriger la répétition de la valeur « Écoute » et l'alternance illogique des icônes Heart et Leaf

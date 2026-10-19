@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
+import Admin from "@/pages/Admin";
 import MentionLegale from "@/components/mentionLegale";
 import PolitiqueConfidentialite from "@/components/politiqueConfidentialite";
 import PartenariatAdomsap from "@/components/partenariatAdomsap";
@@ -14,6 +15,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/admin" component={Admin} />
       <Route path="/mentions-legales" component={MentionLegale} />
       <Route path="/politique-de-confidentialite" component={PolitiqueConfidentialite} />
       <Route path="/partenariat-adomsap" component={PartenariatAdomsap} />

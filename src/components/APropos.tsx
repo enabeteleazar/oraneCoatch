@@ -30,7 +30,7 @@ const profil = {
   ],
   formations: [] as string[], // ex. "Intitulé du diplôme, organisme, année"
   certifications: [] as string[], // ex. "Intitulé de la certification, organisme, année"
-  methode: [] as String[],
+  methode: [] as string[],
 }; 
 const fade = {
   hidden: { opacity: 0, y: 22 },

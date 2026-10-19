@@ -6,6 +6,7 @@ import APropos from "@/components/APropos";
 import CadreDeontologique from "@/components/CadreDeontologique";
 import Temoignages from "@/components/Temoignages";
 import Faq from "@/components/Faq";
+import { Tarif, useTarifs } from "@/lib/tarifs";
 import { motion } from "framer-motion";
 import { ArrowDown, ArrowRight, ArrowUpRight, Ear, HandHeart, Heart, Leaf, Menu, Phone, Sprout, X } from "lucide-react";
 import heroImg from "@/assets/images/hero.png";
@@ -26,6 +27,7 @@ const fade = {
 };
 
 export default function Home() {
+  const tarifs = useTarifs();
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);
   useEffect(() => {
@@ -194,30 +196,30 @@ export default function Home() {
             <div className="grid gap-3 md:grid-cols-2">
               <div className="flex items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-[#f7f4ec] px-5 py-5 md:px-7">
                 <div>
-                  <h3 className="display-serif text-2xl">Séance découverte offerte</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">30 minutes</p>
+                  <h3 className="display-serif text-2xl"><Tarif pret={tarifs.pret}>{tarifs.decouverte.titre}</Tarif></h3>
+                  <p className="mt-1 text-sm text-muted-foreground"><Tarif pret={tarifs.pret}>{tarifs.decouverte.duree}</Tarif></p>
                 </div>
-                <span className="shrink-0 text-sm font-medium text-primary">Offerte</span>
+                <span className={`shrink-0 font-medium text-primary ${tarifs.decouverte.offerte ? "text-sm" : "text-lg"}`}><Tarif pret={tarifs.pret}>{tarifs.decouverte.prix}</Tarif></span>
               </div>
               <div className="flex items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-[#f7f4ec] px-5 py-5 md:px-7">
                 <div>
                   <h3 className="display-serif text-2xl">Séance individuelle</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">1 h 30</p>
+                  <p className="mt-1 text-sm text-muted-foreground"><Tarif pret={tarifs.pret}>{tarifs.seance.duree}</Tarif></p>
                 </div>
-                <span className="shrink-0 text-lg font-medium text-primary">60 €</span>
+                <span className="shrink-0 text-lg font-medium text-primary"><Tarif pret={tarifs.pret}>{tarifs.seance.prix}</Tarif></span>
               </div>
               <div className="flex items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-[#f7f4ec] px-5 py-5 md:px-7">
                 <h3 className="display-serif text-2xl">Pack 5 séances</h3>
-                <span className="shrink-0 text-lg font-medium text-primary">280 €</span>
+                <span className="shrink-0 text-lg font-medium text-primary"><Tarif pret={tarifs.pret}>{tarifs.pack5.prix}</Tarif></span>
               </div>
               <div className="flex items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-[#f7f4ec] px-5 py-5 md:px-7">
                 <h3 className="display-serif text-2xl">Pack 10 séances</h3>
-                <span className="shrink-0 text-lg font-medium text-primary">560 €</span>
+                <span className="shrink-0 text-lg font-medium text-primary"><Tarif pret={tarifs.pret}>{tarifs.pack10.prix}</Tarif></span>
               </div>
             </div>
             <div className="mt-5 flex flex-col gap-3 border-l-2 border-primary/35 pl-5 text-sm leading-[1.8] text-foreground/70 sm:flex-row sm:gap-8">
               <p>Les prix peuvent être adaptés après discussion.</p>
-              <p>Visites à domicile : + 10 € par séance.</p>
+              <p><Tarif pret={tarifs.pret}>{tarifs.domicile.phrase}</Tarif></p>
             </div>
             <a href={phone} className="group mt-7 inline-flex min-h-[50px] items-center gap-3 rounded-full bg-primary px-6 text-sm font-medium text-primary-foreground transition duration-300 hover:-translate-y-0.5 hover:bg-[#4f5940] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
               <Phone size={15} /> Parler des formules <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />

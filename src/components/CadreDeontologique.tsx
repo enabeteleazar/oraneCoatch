@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { ArrowUpRight, Check } from "lucide-react";
+import { Tarif, useTarifs, type TarifsAffichage } from "@/lib/tarifs";
 
 /**
  * ⚠️ À RELIRE ET À FAIRE VÔTRES avant mise en ligne.
@@ -12,7 +13,7 @@ const AFFICHER_CADRE_DEONTOLOGIQUE = true;
 // renseignez-le ici. Laissez `null` sinon : rien ne sera affiché.
 const codeDeontologie: { nom: string; url?: string } | null = null;
 
-const engagements = [
+const construireEngagements = (t: TarifsAffichage) => [
   {
     titre: "Confidentialité",
     texte: "Ce que vous confiez en séance reste entre nous. Rien n'est transmis à un tiers sans votre accord, sauf obligation légale ou situation de danger grave.",
@@ -35,7 +36,7 @@ const engagements = [
   },
   {
     titre: "Transparence sur les tarifs",
-    texte: "Les tarifs sont affichés clairement, la séance découverte est offerte et aucune formule ne vous est imposée.",
+    texte: `Les tarifs sont affichés clairement${t.decouverte.offerte ? ", la séance découverte est offerte" : ""} et aucune formule ne vous est imposée.`,
   },
 ];
 
@@ -45,7 +46,9 @@ const fade = {
 };
 
 export default function CadreDeontologique() {
+  const tarifs = useTarifs();
   if (!AFFICHER_CADRE_DEONTOLOGIQUE) return null;
+  const engagements = construireEngagements(tarifs);
 
   return (
     <section id="engagements" className="bg-[#efebde] py-20 md:py-28">
@@ -87,7 +90,7 @@ export default function CadreDeontologique() {
               </span>
               <div>
                 <h3 className="display-serif text-2xl leading-tight">{titre}</h3>
-                <p className="mt-2 text-sm leading-[1.85] text-foreground/70">{texte}</p>
+                <p className="mt-2 text-sm leading-[1.85] text-foreground/70">{titre === "Transparence sur les tarifs" ? <Tarif pret={tarifs.pret}>{texte}</Tarif> : texte}</p>
               </div>
             </motion.li>
           ))}
