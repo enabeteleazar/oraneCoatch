@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Battery, Compass, Ear, Phone } from "lucide-react";
+import { Link } from "wouter";
+import { ArrowRight, Battery, CalendarDays, Compass, Ear } from "lucide-react";
 import { Tarif, useTarifs, type TarifsAffichage } from "@/lib/tarifs";
 
 /**
@@ -32,8 +33,8 @@ const construireEtapes = (t: TarifsAffichage) => [
   {
     numero: "01",
     titre: "Un premier contact",
-    texte: "Vous appelez ORANE, simplement, pour trouver un moment qui vous convient. Pas besoin d'expliquer tout de suite pourquoi vous appelez.",
-    meta: "Par téléphone",
+    texte: "Vous choisissez un créneau en ligne ou vous appelez ORANE, simplement. Pas besoin d'expliquer tout de suite ce qui vous amène.",
+    meta: "En ligne ou par téléphone",
   },
   {
     numero: "02",
@@ -128,12 +129,12 @@ export default function PublicEtSeance() {
         {infos.lieu && <p className="mt-6 max-w-[680px] text-sm leading-[1.8] text-foreground/70">{infos.lieu}</p>}
 
         <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-          <a
-            href={infos.telephoneHref}
+          <Link
+            href="/rendez-vous"
             className="group inline-flex min-h-[50px] items-center gap-3 rounded-full bg-primary px-6 text-sm font-medium text-primary-foreground transition duration-300 hover:-translate-y-0.5 hover:bg-[#4f5940] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
           >
-            <Phone size={15} /> {infos.telephone} <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />
-          </a>
+            <CalendarDays size={15} /> Prendre rendez-vous <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />
+          </Link>
           <a href="#formules" className="inline-flex items-center gap-2 px-2 py-3 text-sm text-foreground/75 transition-colors hover:text-primary">
             Voir les formules et tarifs
           </a>

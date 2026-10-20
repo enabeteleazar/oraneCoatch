@@ -1,14 +1,8 @@
 import { validerTarifs, type Tarifs } from "../../shared/tarifs.js";
 
-/**
- * Stockage des tarifs.
- * - Production (Vercel) : Upstash Redis via l'API REST (Marketplace Vercel : variables
- *   KV_REST_API_URL / KV_REST_API_TOKEN, ou UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN).
- * - Développement local sans Redis : fichier `.data/store.json` (ignoré par Git).
- * - Sinon : aucun stockage, les tarifs par défaut du code restent affichés.
- */
-
 const CLE_TARIFS = "orane:tarifs";
+const FICHIER_LOCAL = ".data/store.json";
+const cleExpiration = (cle: string) => `__expire:${cle}`;
 
 export type Enregistrement = { tarifs: Tarifs; updatedAt: string };
 export type ModeStockage = "redis" | "fichier" | "aucun";
@@ -40,84 +34,170 @@ async function redis(commande: (string | number)[]): Promise<unknown> {
   return data.result;
 }
 
-/* ---------- Fichier local (développement) ---------- */
-
 async function fichierLocal() {
   const fs = await import("node:fs/promises");
   const path = await import("node:path");
-  const dossier = path.join(process.cwd(), ".data");
-  const fichier = path.join(dossier, "store.json");
+  const fichier = path.join(process.cwd(), FICHIER_LOCAL);
   return {
     async lire(): Promise<Record<string, string>> {
       try {
-        return JSON.parse(await fs.readFile(fichier, "utf8")) as Record<string, string>;
-      } catch {
-        return {};
+        const contenu = await fs.readFile(fichier, "utf8");
+        const donnees: unknown = JSON.parse(contenu);
+        if (typeof donnees !== "object" || donnees === null || Array.isArray(donnees)) {
+          throw new Error("Le fichier de stockage local doit contenir un objet JSON.");
+        }
+        return donnees as Record<string, string>;
+      } catch (erreur) {
+        if (typeof erreur === "object" && erreur !== null && "code" in erreur && erreur.code === "ENOENT") return {};
+        throw erreur;
       }
     },
     async ecrire(donnees: Record<string, string>) {
-      await fs.mkdir(dossier, { recursive: true });
+      await fs.mkdir(path.dirname(fichier), { recursive: true });
       await fs.writeFile(fichier, JSON.stringify(donnees, null, 2));
     },
   };
 }
 
-/* ---------- Tarifs ---------- */
+let fileQueue: Promise<void> = Promise.resolve();
+
+function transactionLocale<T>(operation: () => Promise<T>): Promise<T> {
+  const resultat = fileQueue.then(operation, operation);
+  fileQueue = resultat.then(
+    () => undefined,
+    () => undefined,
+  );
+  return resultat;
+}
+
+export async function lireCle(cle: string): Promise<string | null> {
+  if (configRedis()) {
+    const resultat = await redis(["GET", cle]);
+    return typeof resultat === "string" ? resultat : null;
+  }
+  if (modeStockage() === "fichier") {
+    const donnees = await (await fichierLocal()).lire();
+    const expiration = Number(donnees[cleExpiration(cle)]);
+    if (Number.isFinite(expiration) && expiration <= Date.now()) return null;
+    return donnees[cle] ?? null;
+  }
+  return null;
+}
+
+export async function lireCles(cles: string[]): Promise<(string | null)[]> {
+  if (cles.length === 0) return [];
+  if (configRedis()) {
+    const resultat = await redis(["MGET", ...cles]);
+    if (!Array.isArray(resultat)) throw new Error("Réponse Redis MGET invalide");
+    return cles.map((_, index) => (typeof resultat[index] === "string" ? resultat[index] : null));
+  }
+  if (modeStockage() === "fichier") {
+    const donnees = await (await fichierLocal()).lire();
+    return cles.map((cle) => {
+      const expiration = Number(donnees[cleExpiration(cle)]);
+      return Number.isFinite(expiration) && expiration <= Date.now() ? null : donnees[cle] ?? null;
+    });
+  }
+  return cles.map(() => null);
+}
+
+export async function ecrireCle(cle: string, valeur: string, ttlSecondes?: number): Promise<void> {
+  if (configRedis()) {
+    const commande: (string | number)[] = ["SET", cle, valeur];
+    if (ttlSecondes !== undefined) commande.push("EX", Math.max(1, Math.ceil(ttlSecondes)));
+    await redis(commande);
+    return;
+  }
+  if (modeStockage() !== "fichier") throw new Error("Aucun stockage configuré");
+  await transactionLocale(async () => {
+    const fichier = await fichierLocal();
+    const donnees = await fichier.lire();
+    donnees[cle] = valeur;
+    if (ttlSecondes === undefined) delete donnees[cleExpiration(cle)];
+    else donnees[cleExpiration(cle)] = String(Date.now() + Math.max(1, Math.ceil(ttlSecondes)) * 1000);
+    await fichier.ecrire(donnees);
+  });
+}
+
+export async function ecrireSiAbsent(cle: string, valeur: string, ttlSecondes: number): Promise<boolean> {
+  if (configRedis()) {
+    const resultat = await redis(["SET", cle, valeur, "EX", Math.max(1, Math.ceil(ttlSecondes)), "NX"]);
+    return resultat === "OK";
+  }
+  if (modeStockage() !== "fichier") throw new Error("Aucun stockage configuré");
+  return transactionLocale(async () => {
+    const fichier = await fichierLocal();
+    const donnees = await fichier.lire();
+    const expiration = Number(donnees[cleExpiration(cle)]);
+    if (donnees[cle] !== undefined && (!Number.isFinite(expiration) || expiration > Date.now())) return false;
+    donnees[cle] = valeur;
+    donnees[cleExpiration(cle)] = String(Date.now() + Math.max(1, Math.ceil(ttlSecondes)) * 1000);
+    await fichier.ecrire(donnees);
+    return true;
+  });
+}
+
+export async function supprimerCle(cle: string): Promise<void> {
+  if (configRedis()) {
+    await redis(["DEL", cle]);
+    return;
+  }
+  if (modeStockage() !== "fichier") throw new Error("Aucun stockage configuré");
+  await transactionLocale(async () => {
+    const fichier = await fichierLocal();
+    const donnees = await fichier.lire();
+    delete donnees[cle];
+    delete donnees[cleExpiration(cle)];
+    await fichier.ecrire(donnees);
+  });
+}
 
 export async function lireTarifs(): Promise<Enregistrement | null> {
-  const mode = modeStockage();
-  let brut: unknown = null;
-  if (mode === "redis") brut = await redis(["GET", CLE_TARIFS]);
-  else if (mode === "fichier") brut = (await (await fichierLocal()).lire())[CLE_TARIFS] ?? null;
-  else return null;
-
-  if (typeof brut !== "string") return null;
+  if (modeStockage() === "aucun") return null;
+  const brut = await lireCle(CLE_TARIFS);
+  if (brut === null) return null;
   try {
-    const enreg = JSON.parse(brut) as { tarifs?: unknown; updatedAt?: unknown };
-    const v = validerTarifs(enreg.tarifs);
-    if (v.ok === false) return null;
-    return { tarifs: v.tarifs, updatedAt: typeof enreg.updatedAt === "string" ? enreg.updatedAt : "" };
+    const enregistrement = JSON.parse(brut) as { tarifs?: unknown; updatedAt?: unknown };
+    const validation = validerTarifs(enregistrement.tarifs);
+    if (validation.ok === false) return null;
+    return {
+      tarifs: validation.tarifs,
+      updatedAt: typeof enregistrement.updatedAt === "string" ? enregistrement.updatedAt : "",
+    };
   } catch {
     return null;
   }
 }
 
 export async function ecrireTarifs(tarifs: Tarifs): Promise<Enregistrement> {
-  const enreg: Enregistrement = { tarifs, updatedAt: new Date().toISOString() };
-  const mode = modeStockage();
-  if (mode === "redis") {
-    await redis(["SET", CLE_TARIFS, JSON.stringify(enreg)]);
-  } else if (mode === "fichier") {
-    const f = await fichierLocal();
-    await f.ecrire({ ...(await f.lire()), [CLE_TARIFS]: JSON.stringify(enreg) });
-  } else {
-    throw new Error("Aucun stockage configuré");
-  }
-  return enreg;
+  const enregistrement = { tarifs, updatedAt: new Date().toISOString() };
+  await ecrireCle(CLE_TARIFS, JSON.stringify(enregistrement));
+  return enregistrement;
 }
-
-/* ---------- Compteurs (limitation des tentatives de connexion) ---------- */
 
 const compteursMemoire = new Map<string, { n: number; expire: number }>();
 
 export async function lireCompteur(cle: string): Promise<number> {
   if (configRedis()) return Number((await redis(["GET", cle])) ?? 0) || 0;
-  const c = compteursMemoire.get(cle);
-  return c && c.expire > Date.now() ? c.n : 0;
+  const compteur = compteursMemoire.get(cle);
+  return compteur && compteur.expire > Date.now() ? compteur.n : 0;
 }
 
 export async function incrementer(cle: string, ttlSecondes: number): Promise<void> {
   if (configRedis()) {
-    const n = Number(await redis(["INCR", cle]));
-    if (n === 1) await redis(["EXPIRE", cle, ttlSecondes]);
+    const nombre = Number(await redis(["INCR", cle]));
+    if (nombre === 1) await redis(["EXPIRE", cle, ttlSecondes]);
     return;
   }
-  const c = compteursMemoire.get(cle);
-  if (c && c.expire > Date.now()) c.n += 1;
+  const compteur = compteursMemoire.get(cle);
+  if (compteur && compteur.expire > Date.now()) compteur.n += 1;
   else compteursMemoire.set(cle, { n: 1, expire: Date.now() + ttlSecondes * 1000 });
 }
 
 export async function supprimer(cle: string): Promise<void> {
-  if (configRedis()) await redis(["DEL", cle]);
-  else compteursMemoire.delete(cle);
+  if (configRedis()) {
+    await redis(["DEL", cle]);
+    return;
+  }
+  compteursMemoire.delete(cle);
 }

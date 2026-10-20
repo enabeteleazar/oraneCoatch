@@ -127,10 +127,10 @@ export default function MentionLegale() {
 
             <Section title="6. Données personnelles">
               <p>
-                Ce site ne comporte pas de formulaire de collecte et ne dépose aucun cookie de mesure d'audience ou
-                de publicité. Les données que vous communiquez par téléphone ou par e-mail (nom, coordonnées, objet
-                de votre demande) sont utilisées uniquement pour répondre à votre demande et organiser un
-                rendez-vous. Elles ne sont ni vendues ni cédées à des tiers.
+                Ce site ne dépose aucun cookie de mesure d'audience ou de publicité. Les données que vous
+                communiquez en réservant un rendez-vous en ligne, par téléphone ou par e-mail (nom, coordonnées,
+                objet de votre demande) sont utilisées uniquement pour répondre à votre demande et organiser un
+                rendez-vous. Elles ne sont ni vendues ni cédées à des fins commerciales.
               </p>
               <p>
                 Conformément au Règlement général sur la protection des données (RGPD) et à la loi

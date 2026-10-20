@@ -32,8 +32,9 @@ const construireQuestions = (t: TarifsAffichage): { question: string; reponse: R
     question: "Comment prendre rendez-vous ?",
     reponse: (
       <p>
-        Par téléphone au <a href={telephoneHref} className={lien}>{telephone}</a>. Un premier échange, sans engagement,
-        permet de fixer un moment qui vous convient.
+        En ligne, depuis la page <Link href="/rendez-vous" className={lien}>Prendre rendez-vous</Link> : vous choisissez un
+        créneau, vous laissez vos coordonnées et vous recevez un e-mail de confirmation. Vous pouvez aussi appeler le{" "}
+        <a href={telephoneHref} className={lien}>{telephone}</a>.
       </p>
     ),
   },

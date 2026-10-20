@@ -102,9 +102,15 @@ export default function PolitiqueConfidentialite() {
               <p>Les données ne sont recueillies que lorsque vous prenez contact ou que vous êtes accompagné(e).</p>
               <ul className="list-disc space-y-3 pl-5">
                 <li>
-                  <strong className={strong}>Prise de contact et rendez-vous.</strong> Nom, coordonnées, objet de
-                  votre demande. Finalité : vous répondre et organiser un rendez-vous. Base légale : mesures
-                  précontractuelles prises à votre demande.
+                  <strong className={strong}>Prise de contact.</strong> Nom, coordonnées, objet de votre demande.
+                  Finalité : vous répondre et organiser un rendez-vous. Base légale : mesures précontractuelles
+                  prises à votre demande.
+                </li>
+                <li>
+                  <strong className={strong}>Réservation en ligne.</strong> Lorsque vous réservez un créneau sur ce
+                  site : nom, téléphone, adresse e-mail, message facultatif et créneau choisi. Finalité :
+                  enregistrer votre rendez-vous, vous envoyer un e-mail de confirmation et l'inscrire à l'agenda de
+                  l'exploitant. Base légale : mesures précontractuelles prises à votre demande.
                 </li>
                 <li>
                   <strong className={strong}>Accompagnement.</strong> Informations utiles au suivi de vos séances
@@ -132,8 +138,9 @@ export default function PolitiqueConfidentialite() {
 
             <Section title="3. Ce que ce site ne fait pas">
               <p>
-                Ce site ne contient aucun formulaire de collecte, aucun outil de mesure d'audience, aucune publicité
-                et ne dépose aucun cookie de suivi. Les polices de caractères sont hébergées avec le site : votre
+                Hormis le formulaire de réservation d'un rendez-vous, ce site ne contient aucun formulaire de
+                collecte. Il n'utilise aucun outil de mesure d'audience, aucune publicité et ne dépose aucun cookie
+                de suivi. Les polices de caractères sont hébergées avec le site : votre
                 navigateur ne contacte aucun service tiers pour les afficher. Vous n'avez donc aucun bandeau de
                 consentement à renseigner.
               </p>
@@ -148,12 +155,20 @@ export default function PolitiqueConfidentialite() {
                 Seul l'hébergeur technique du site ({infos.hebergeur}) peut y avoir accès, au titre de sa mission
                 d'hébergement.
               </p>
+              <p>
+                La réservation en ligne s'appuie sur des prestataires techniques qui traitent vos données pour le
+                compte de l'exploitant : Google (Google Agenda, pour inscrire le rendez-vous dans l'agenda de
+                l'exploitant), Resend (envoi de l'e-mail de confirmation) et Upstash (stockage des créneaux et des
+                réservations). Certains peuvent traiter des données hors de l'Union européenne, dans le cadre des
+                garanties prévues par le RGPD. [À compléter : vérifier la région d'hébergement choisie pour chacun.]
+              </p>
               <p>{infos.partenaire}</p>
             </Section>
 
             <Section title="5. Combien de temps sont-elles conservées ?">
               <ul className="list-disc space-y-2 pl-5">
                 <li><strong className={strong}>Demande de contact sans suite :</strong> 3 ans après le dernier échange.</li>
+                <li><strong className={strong}>Réservation en ligne :</strong> les informations saisies dans le formulaire sont supprimées automatiquement du site 6 mois après la date du rendez-vous. L'événement inscrit à l'agenda de l'exploitant est conservé [À compléter : durée].</li>
                 <li><strong className={strong}>Données de suivi d'accompagnement :</strong> pendant la durée de l'accompagnement, puis [À compléter : durée] après la dernière séance.</li>
                 <li><strong className={strong}>Pièces comptables (factures) :</strong> 10 ans, conformément à la loi.</li>
               </ul>

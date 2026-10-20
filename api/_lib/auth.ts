@@ -81,11 +81,29 @@ export function origineValide(request: Request): boolean {
 }
 
 /** Clé de compteur basée sur une empreinte de l'IP (l'adresse n'est pas stockée en clair). */
-export function cleEchecs(request: Request): string {
+export function cleIp(request: Request, prefixe: string): string {
   const ip =
     (request.headers.get("x-vercel-forwarded-for") ?? request.headers.get("x-forwarded-for") ?? "").split(",")[0].trim() ||
     "inconnue";
-  return `orane:echecs:${createHash("sha256").update(ip).digest("hex").slice(0, 32)}`;
+  return `orane:${prefixe}:${createHash("sha256").update(ip).digest("hex").slice(0, 32)}`;
 }
+
+export const cleEchecs = (request: Request) => cleIp(request, "echecs");
+
+/**
+ * Garde commune des routes d'administration. Renvoie une réponse d'erreur à retourner telle quelle,
+ * ou `null` si la requête est autorisée. `modifie` : true pour POST / PUT / DELETE (contrôle de l'origine).
+ */
+export function exigerAdmin(request: Request, modifie: boolean): Response | null {
+  if (modifie && !origineValide(request)) {
+    return new Response(JSON.stringify({ erreur: "Origine non autorisée." }), { status: 403, headers: ENTETES_JSON });
+  }
+  if (!sessionValide(request)) {
+    return new Response(JSON.stringify({ erreur: "Session expirée : reconnectez-vous." }), { status: 401, headers: ENTETES_JSON });
+  }
+  return null;
+}
+
+const ENTETES_JSON = { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" };
 
 export const attendre = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

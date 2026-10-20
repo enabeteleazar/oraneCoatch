@@ -13,6 +13,8 @@ import {
   verifierMotDePasse,
 } from "../_lib/auth.js";
 import { incrementer, lireCompteur, modeStockage, supprimer } from "../_lib/store.js";
+import { agendaConfigure } from "../_lib/google.js";
+import { emailConfigure } from "../_lib/email.js";
 
 /** État de la session : sert à afficher le formulaire de connexion ou le tableau de bord. */
 export async function GET(request: Request) {
@@ -20,6 +22,8 @@ export async function GET(request: Request) {
     configure: motDePasseConfigure() !== null,
     authentifie: sessionValide(request),
     stockage: modeStockage(),
+    agenda: agendaConfigure(),
+    email: emailConfigure(),
   });
 }
 

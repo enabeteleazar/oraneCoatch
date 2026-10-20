@@ -194,7 +194,7 @@ export default function PartenariatAdomsap() {
                 <Phone size={16} /> {infos.telephone}
               </a>
               <Link
-                href="/#contact"
+                href="/rendez-vous"
                 className="group inline-flex min-h-[52px] items-center justify-center gap-3 rounded-full border border-[#e5e3d1]/55 px-7 text-sm text-[#fbf8ef] transition-colors hover:bg-[#f8f5eb] hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f8f5eb]"
               >
                 Prendre rendez-vous <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />

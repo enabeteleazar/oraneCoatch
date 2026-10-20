@@ -8,7 +8,7 @@ import Temoignages from "@/components/Temoignages";
 import Faq from "@/components/Faq";
 import { Tarif, useTarifs } from "@/lib/tarifs";
 import { motion } from "framer-motion";
-import { ArrowDown, ArrowRight, ArrowUpRight, Ear, HandHeart, Heart, Leaf, Menu, Phone, Sprout, X } from "lucide-react";
+import { ArrowDown, ArrowRight, ArrowUpRight, CalendarDays, Ear, HandHeart, Heart, Leaf, Menu, Phone, Sprout, X } from "lucide-react";
 import heroImg from "@/assets/images/hero.png";
 
 const phone = "tel:+33686544766";
@@ -43,7 +43,7 @@ export default function Home() {
     { href: "#accompagnement", label: "L'accompagnement" },
     { href: "#formules", label: "Formules" },
     { href: "#partenariat", label: "Partenariat" },
-    { href: "#contact", label: "Prendre rendez-vous" },
+    { href: "/rendez-vous", label: "Prendre rendez-vous", page: true },
   ];
 
   return (
@@ -62,7 +62,7 @@ export default function Home() {
           </a>
 
           <nav aria-label="Navigation principale" className="hidden items-center gap-9 md:flex">
-            {navItems.map((item) => <a key={item.href} href={item.href} className="nav-link text-[.78rem] tracking-[.025em] text-foreground/75 transition-colors hover:text-primary">{item.label}</a>)}
+            {navItems.map((item) => item.page ? <Link key={item.href} href={item.href} className="nav-link text-[.78rem] tracking-[.025em] text-foreground/75 transition-colors hover:text-primary">{item.label}</Link> : <a key={item.href} href={item.href} className="nav-link text-[.78rem] tracking-[.025em] text-foreground/75 transition-colors hover:text-primary">{item.label}</a>)}
             <a href={phone} className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-[.76rem] font-medium text-primary-foreground transition duration-300 hover:-translate-y-0.5 hover:bg-[#4f5940] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
               <Phone size={14} /> Appeler ORANE
             </a>
@@ -72,7 +72,7 @@ export default function Home() {
           </button>
         </div>
         {menuOpen && <nav aria-label="Navigation mobile" className="mx-4 rounded-2xl border border-border bg-background/95 p-4 shadow-lg backdrop-blur-md md:hidden">
-          {navItems.map((item) => <a key={item.href} href={item.href} onClick={closeMenu} className="block border-b border-border/70 px-3 py-4 text-sm last:border-0">{item.label}</a>)}
+          {navItems.map((item) => item.page ? <Link key={item.href} href={item.href} onClick={closeMenu} className="block border-b border-border/70 px-3 py-4 text-sm last:border-0">{item.label}</Link> : <a key={item.href} href={item.href} onClick={closeMenu} className="block border-b border-border/70 px-3 py-4 text-sm last:border-0">{item.label}</a>)}
           <a href={phone} onClick={closeMenu} className="mt-3 flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm text-primary-foreground"><Phone size={15} /> 06 86 54 47 66</a>
         </nav>}
       </header>
@@ -96,9 +96,9 @@ export default function Home() {
                 Vous vous sentez épuisé(e), dépassé(e) ou incompris(e)&nbsp;? Vous n'êtes pas seul(e).
               </motion.p>
               <motion.div initial="hidden" animate="visible" variants={fade} transition={{ delay: .28 }} className="mt-9 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-                <a href={phone} className="group inline-flex min-h-[54px] items-center gap-3 rounded-full bg-primary px-7 text-sm font-medium text-primary-foreground transition duration-300 hover:-translate-y-0.5 hover:bg-[#4f5940] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
-                  <Phone size={16} /> Parler avec ORANE <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />
-                </a>
+                <Link href="/rendez-vous" className="group inline-flex min-h-[54px] items-center gap-3 rounded-full bg-primary px-7 text-sm font-medium text-primary-foreground transition duration-300 hover:-translate-y-0.5 hover:bg-[#4f5940] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
+                  <CalendarDays size={16} /> Prendre rendez-vous <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />
+                </Link>
                 <a href="#approche" className="inline-flex items-center gap-2 px-2 py-3 text-sm text-foreground/75 transition-colors hover:text-primary">Découvrir l'approche <ArrowDown size={14} /></a>
               </motion.div>
               <motion.div initial="hidden" animate="visible" variants={fade} transition={{ delay: .4 }} className="mt-12 flex items-center gap-3 text-sm text-foreground/70">
@@ -254,11 +254,19 @@ export default function Home() {
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-70px" }} variants={fade}>
               <p className="eyebrow mb-5 text-primary">Le premier pas peut être simple</p>
               <h2 className="display-serif max-w-[650px] text-5xl leading-[.99] md:text-[5rem]">Vous n'êtes <span className="italic text-primary">pas seul(e).</span></h2>
-              <p className="mt-7 max-w-[510px] text-base leading-[1.9] text-foreground/72">Pour prendre rendez-vous, vous pouvez appeler ORANE ou vous rendre sur le site. Un premier contact, à votre façon.</p>
+              <p className="mt-7 max-w-[510px] text-base leading-[1.9] text-foreground/72">Pour prendre rendez-vous, choisissez un créneau en ligne ou appelez ORANE. Un premier contact, à votre façon.</p>
               <div className="script-note mt-4 text-3xl text-primary md:text-4xl">un pas après l'autre</div>
             </motion.div>
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-70px" }} variants={fade} className="rounded-[2rem] border border-[#d7d2c1] bg-[#f8f5ed] p-7 shadow-[0_18px_60px_rgba(55,54,37,.07)] md:p-9">
               <div className="eyebrow mb-7 text-primary">Prendre rendez-vous</div>
+              <Link href="/rendez-vous" className="group mb-6 flex items-center gap-4 border-b border-[#ded9c9] pb-6 transition-colors hover:text-primary">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#e7e5d7] text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground"><CalendarDays size={19} /></span>
+                <span>
+                  <span className="block text-xs text-muted-foreground">En ligne</span>
+                  <span className="mt-1 block text-xl font-medium tracking-[.03em]">Choisir un créneau</span>
+                </span>
+                <ArrowUpRight className="ml-auto text-primary" size={18} />
+              </Link>
               <a href={phone} className="group flex items-center gap-4 border-b border-[#ded9c9] pb-6 transition-colors hover:text-primary">
                 <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#e7e5d7] text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground"><Phone size={19} strokeWidth={1.6} /></span>
                 <span>
@@ -275,7 +283,7 @@ export default function Home() {
                 </span>
                 <ArrowUpRight className="ml-auto shrink-0 text-primary" size={18} />
               </a>
-              <p className="mt-8 border-t border-[#ded9c9] pt-5 text-xs leading-relaxed text-muted-foreground">Rendez-vous sur le site ou par téléphone.</p>
+              <p className="mt-8 border-t border-[#ded9c9] pt-5 text-xs leading-relaxed text-muted-foreground">Rendez-vous en ligne ou par téléphone.</p>
             </motion.div>
           </div>
         </section>
