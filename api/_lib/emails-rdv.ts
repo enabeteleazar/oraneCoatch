@@ -1,7 +1,9 @@
-import { LIBELLE_TYPE, TELEPHONE_CONTACT, formaterHeure, formaterJourComplet, type Creneau, type Reservation } from "../../shared/rdv.js";
+import { LIBELLE_TYPE, TELEPHONE_CONTACT, formaterHeure, formaterJourComplet, type Creneau } from "../../shared/rdv.js";
+import { creerIcs } from "../../shared/ics.js";
+import "./config.js";
 import { formaterDuree } from "../../shared/tarifs.js";
-import { creerIcs } from "./ics.js";
 import type { EmailEntree } from "./email.js";
+import type { Client } from "./google.js";
 
 const lieu = () => process.env.RDV_LIEU || undefined;
 const echapper = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -25,7 +27,7 @@ const ligne = (libelle: string, valeur: string) =>
   `<tr><td style="padding:6px 16px 6px 0;color:#6b7060;vertical-align:top">${libelle}</td><td style="padding:6px 0"><strong>${echapper(valeur)}</strong></td></tr>`;
 
 /** E-mail envoyé à la personne qui réserve (avec invitation .ics). */
-export function emailConfirmation(c: Creneau, r: Reservation): Omit<EmailEntree, "a" | "repondreA"> {
+export function emailConfirmation(c: Creneau, r: Client): Omit<EmailEntree, "a" | "repondreA"> {
   const type = LIBELLE_TYPE[c.type];
   const detail = [
     ["Rendez-vous", type],
@@ -70,7 +72,7 @@ export function emailConfirmation(c: Creneau, r: Reservation): Omit<EmailEntree,
 }
 
 /** E-mail envoyé à l'exploitant à chaque nouvelle réservation. */
-export function emailNotification(c: Creneau, r: Reservation): Omit<EmailEntree, "a" | "repondreA"> {
+export function emailNotification(c: Creneau, r: Client): Omit<EmailEntree, "a" | "repondreA"> {
   const type = LIBELLE_TYPE[c.type];
   const detail = [
     ["Rendez-vous", `${type}, ${quand(c)} (${duree(c)})`],
@@ -87,7 +89,7 @@ export function emailNotification(c: Creneau, r: Reservation): Omit<EmailEntree,
 }
 
 /** E-mail envoyé quand l'exploitant annule un rendez-vous. */
-export function emailAnnulation(c: Creneau, r: Reservation): Omit<EmailEntree, "a" | "repondreA"> {
+export function emailAnnulation(c: Creneau, r: Client): Omit<EmailEntree, "a" | "repondreA"> {
   return {
     sujet: `Annulation de votre rendez-vous du ${minuscule(formaterJourComplet(c.debut))}`,
     texte: [
@@ -105,4 +107,3 @@ export function emailAnnulation(c: Creneau, r: Reservation): Omit<EmailEntree, "
   };
 }
 
-export { creerIcs };

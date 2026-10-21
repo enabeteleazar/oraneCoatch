@@ -23,11 +23,11 @@ const lienAvisGoogle: string | null = null;
 const lienDeposerAvis: string | null = null;
 
 type Temoignage = {
-  prenom: "Janine Haddad (Janouche)"; // ex. "Marie" ou "M."
-  texte: "Je recommande.";
-  date?: "Septembre 2026"; // ex. "mars 2026"
-  source: "google";
-  consentement: true; // true seulement si vous avez l'accord écrit de la personne
+  prenom: string; // ex. "Marie" ou "M."
+  texte: string;
+  date?: string; // ex. "mars 2026"
+  source: "direct" | "google";
+  consentement: boolean; // true seulement si vous avez l'accord écrit de la personne
 };
 
 const temoignages: Temoignage[] = [

@@ -6,9 +6,11 @@ import APropos from "@/components/APropos";
 import CadreDeontologique from "@/components/CadreDeontologique";
 import Temoignages from "@/components/Temoignages";
 import Faq from "@/components/Faq";
+import ContactForm from "@/components/ContactForm";
+import { whatsappUrl } from "@/lib/contact";
 import { Tarif, useTarifs } from "@/lib/tarifs";
 import { motion } from "framer-motion";
-import { ArrowDown, ArrowRight, ArrowUpRight, CalendarDays, Ear, HandHeart, Heart, Leaf, Menu, Phone, Sprout, X } from "lucide-react";
+import { ArrowDown, ArrowRight, ArrowUpRight, CalendarDays, Ear, HandHeart, Heart, Leaf, Menu, MessageCircle, Phone, Sprout, X } from "lucide-react";
 import heroImg from "@/assets/images/hero.png";
 
 const phone = "tel:+33686544766";
@@ -28,6 +30,7 @@ const fade = {
 
 export default function Home() {
   const tarifs = useTarifs();
+  const whatsapp = whatsappUrl();
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);
   useEffect(() => {
@@ -275,6 +278,16 @@ export default function Home() {
                 </span>
                 <ArrowUpRight className="ml-auto text-primary" size={18} />
               </a>
+              {whatsapp && (
+                <a href={whatsapp} target="_blank" rel="noreferrer noopener" className="group mt-6 flex items-center gap-4 border-b border-[#ded9c9] pb-6 transition-colors hover:text-primary">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#e7e5d7] text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground"><MessageCircle size={19} strokeWidth={1.5} /></span>
+                  <span>
+                    <span className="block text-xs text-muted-foreground">Par message</span>
+                    <span className="mt-1 block text-xl font-medium tracking-[.03em]">WhatsApp</span>
+                  </span>
+                  <ArrowUpRight className="ml-auto text-primary" size={18} />
+                </a>
+              )}
               <a href={externalSite} target="_blank" rel="noreferrer" className="group mt-6 flex items-center gap-4 transition-colors hover:text-primary">
                 <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#e7e5d7] text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground"><ArrowUpRight size={19} strokeWidth={1.6} /></span>
                 <span className="min-w-0">
@@ -285,6 +298,9 @@ export default function Home() {
               </a>
               <p className="mt-8 border-t border-[#ded9c9] pt-5 text-xs leading-relaxed text-muted-foreground">Rendez-vous en ligne ou par téléphone.</p>
             </motion.div>
+          </div>
+          <div className="relative mx-auto mt-16 max-w-[1120px] px-6 md:mt-20 md:px-10">
+            <ContactForm />
           </div>
         </section>
         <EncartUrgence />

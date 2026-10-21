@@ -24,6 +24,7 @@ export async function GET(request: Request) {
     stockage: modeStockage(),
     agenda: agendaConfigure(),
     email: emailConfigure(),
+    formspree: Boolean(process.env.VITE_FORMSPREE_ENDPOINT),
   });
 }
 

@@ -1,26 +1,50 @@
 import { TARIFS_PAR_DEFAUT } from "../../shared/tarifs.js";
 import { TYPES_CRENEAU, genererCreneaux, type Creneau, type TypeCreneau } from "../../shared/rdv.js";
+import "../_lib/config.js";
 import { json, lireJson } from "../_lib/http.js";
 import { exigerAdmin } from "../_lib/auth.js";
 import { lireTarifs, modeStockage } from "../_lib/store.js";
-import { ecrireCreneaux, lireCreneaux, lireReservations } from "../_lib/rdv-store.js";
+import { agendaConfigure, evenementDuCreneau, evenements, type EvenementAgenda } from "../_lib/google.js";
+import { creerCreneaux, lireCreneauxEntre, purgerAnciensCreneaux, supprimerCreneau } from "../_lib/rdv-store.js";
 
-const SANS_STOCKAGE = { erreur: "Aucun stockage n'est configuré sur le serveur : ajoutez Upstash Redis (Marketplace Vercel)." };
+const SANS_BASE = { erreur: "La base de données n'est pas configurée sur le serveur : définissez DATABASE_URL (Neon)." };
 
-/** Liste des créneaux (libres et réservés) depuis hier. */
+type EtatCreneau = "libre" | "reserve" | "occupe";
+
+/** Liste des créneaux depuis hier, avec leur état d'après Google Agenda. */
 export async function GET(request: Request) {
   const refus = exigerAdmin(request, false);
   if (refus) return refus;
-  if (modeStockage() === "aucun") return json(SANS_STOCKAGE, { status: 503 });
+  if (modeStockage() === "aucune") return json(SANS_BASE, { status: 503 });
 
   try {
-    const depuis = Date.now() - 24 * 3_600_000;
-    const creneaux = (await lireCreneaux()).filter((c) => Date.parse(c.fin) > depuis);
-    const reservations = await lireReservations(creneaux.map((c) => c.id));
+    await purgerAnciensCreneaux().catch(() => undefined);
+    const depuis = new Date(Date.now() - 24 * 3_600_000).toISOString();
+    const jusqua = new Date(Date.now() + 180 * 86_400_000).toISOString();
+    const creneaux = await lireCreneauxEntre(depuis, jusqua);
+
+    let agenda: EvenementAgenda[] | null = null;
+    let agendaErreur: string | null = null;
+    if (agendaConfigure() && creneaux.length > 0) {
+      try {
+        agenda = await evenements(depuis, jusqua);
+      } catch (erreur) {
+        console.error("Lecture de Google Agenda impossible", erreur);
+        agendaErreur = "Google Agenda est injoignable : l'état « libre / réservé » des créneaux n'est pas fiable pour le moment.";
+      }
+    }
+
     return json({
+      agendaErreur,
       creneaux: creneaux.map((c) => {
-        const r = reservations.get(c.id);
-        return { ...c, reservation: r ? { nom: r.nom, telephone: r.telephone, email: r.email, message: r.message, creeLe: r.creeLe } : null };
+        const e = agenda?.find((ev) => ev.debut < Date.parse(c.fin) && ev.fin > Date.parse(c.debut));
+        const etat: EtatCreneau = !e ? "libre" : e.creneauId === c.id ? "reserve" : "occupe";
+        return {
+          ...c,
+          etat,
+          reservation: etat === "reserve" ? e?.client ?? null : null,
+          evenement: etat === "occupe" && e ? { titre: e.titre } : null,
+        };
       }),
     });
   } catch (erreur) {
@@ -33,7 +57,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const refus = exigerAdmin(request, true);
   if (refus) return refus;
-  if (modeStockage() === "aucun") return json(SANS_STOCKAGE, { status: 503 });
+  if (modeStockage() === "aucune") return json(SANS_BASE, { status: 503 });
 
   const corps = (await lireJson(request, 2000)) as Record<string, unknown> | undefined;
   if (!corps) return json({ erreur: "Requête invalide." }, { status: 400 });
@@ -53,55 +77,40 @@ export async function POST(request: Request) {
     });
     if (plage.ok === false) return json({ erreur: plage.erreur }, { status: 400 });
 
-    const existants = await lireCreneaux();
     const maintenant = Date.now();
-    let passes = 0;
-    let chevauchements = 0;
-    const nouveaux: Creneau[] = [];
+    const futurs = plage.creneaux.filter((c) => c.debut > maintenant);
+    const passes = plage.creneaux.length - futurs.length;
+    if (futurs.length === 0) return json({ erreur: "Aucun créneau créé : ils sont tous dans le passé.", passes, chevauchements: 0 }, { status: 400 });
 
-    for (const c of plage.creneaux) {
-      if (c.debut <= maintenant) {
-        passes++;
-        continue;
-      }
-      const occupe = [...existants, ...nouveaux].some((e) => Date.parse(e.debut) < c.fin && Date.parse(e.fin) > c.debut);
-      if (occupe) {
-        chevauchements++;
-        continue;
-      }
-      nouveaux.push({ id: crypto.randomUUID(), debut: new Date(c.debut).toISOString(), fin: new Date(c.fin).toISOString(), type });
+    const { crees, ignores } = await creerCreneaux(futurs, type);
+    if (crees === 0) {
+      return json({ erreur: "Aucun créneau créé : ils chevauchent des créneaux existants.", passes, chevauchements: ignores }, { status: 400 });
     }
-
-    if (nouveaux.length === 0) {
-      return json({ erreur: "Aucun créneau créé : ils sont tous dans le passé ou chevauchent des créneaux existants.", passes, chevauchements }, { status: 400 });
-    }
-    await ecrireCreneaux([...existants, ...nouveaux]);
-    return json({ crees: nouveaux.length, passes, chevauchements });
+    return json({ crees, passes, chevauchements: ignores });
   } catch (erreur) {
     console.error("Création des créneaux impossible", erreur);
     return json({ erreur: "La création des créneaux a échoué. Réessayez dans un instant." }, { status: 502 });
   }
 }
 
-/** Suppression d'un créneau libre (?id=…). */
+/** Suppression d'un créneau non réservé (?id=…). */
 export async function DELETE(request: Request) {
   const refus = exigerAdmin(request, true);
   if (refus) return refus;
-  if (modeStockage() === "aucun") return json(SANS_STOCKAGE, { status: 503 });
+  if (modeStockage() === "aucune") return json(SANS_BASE, { status: 503 });
 
   const id = new URL(request.url).searchParams.get("id") ?? "";
   if (!id || id.length > 64) return json({ erreur: "Créneau inconnu." }, { status: 400 });
 
   try {
-    const existants = await lireCreneaux();
-    if (!existants.some((c) => c.id === id)) return json({ erreur: "Créneau introuvable." }, { status: 404 });
-    if ((await lireReservations([id])).has(id)) {
+    if (agendaConfigure() && (await evenementDuCreneau(id))) {
       return json({ erreur: "Ce créneau est réservé : annulez d'abord le rendez-vous." }, { status: 409 });
     }
-    await ecrireCreneaux(existants.filter((c) => c.id !== id));
-    return json({ ok: true });
+    return (await supprimerCreneau(id)) ? json({ ok: true }) : json({ erreur: "Créneau introuvable." }, { status: 404 });
   } catch (erreur) {
     console.error("Suppression du créneau impossible", erreur);
-    return json({ erreur: "La suppression a échoué. Réessayez dans un instant." }, { status: 502 });
+    return json({ erreur: "La suppression a échoué (Google Agenda injoignable ?). Réessayez dans un instant." }, { status: 502 });
   }
 }
+
+export type { Creneau };

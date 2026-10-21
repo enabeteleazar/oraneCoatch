@@ -102,15 +102,16 @@ export default function PolitiqueConfidentialite() {
               <p>Les données ne sont recueillies que lorsque vous prenez contact ou que vous êtes accompagné(e).</p>
               <ul className="list-disc space-y-3 pl-5">
                 <li>
-                  <strong className={strong}>Prise de contact.</strong> Nom, coordonnées, objet de votre demande.
-                  Finalité : vous répondre et organiser un rendez-vous. Base légale : mesures précontractuelles
-                  prises à votre demande.
+                  <strong className={strong}>Prise de contact.</strong> Par le formulaire du site : nom, adresse e-mail et
+                  message. Par téléphone, e-mail ou WhatsApp : les informations que vous communiquez. Finalité : vous
+                  répondre et organiser un rendez-vous. Base légale : mesures précontractuelles prises à votre
+                  demande.
                 </li>
                 <li>
                   <strong className={strong}>Réservation en ligne.</strong> Lorsque vous réservez un créneau sur ce
-                  site : nom, téléphone, adresse e-mail, message facultatif et créneau choisi. Finalité :
-                  enregistrer votre rendez-vous, vous envoyer un e-mail de confirmation et l'inscrire à l'agenda de
-                  l'exploitant. Base légale : mesures précontractuelles prises à votre demande.
+                  site : nom, téléphone, adresse e-mail, message facultatif et créneau choisi. Finalité : enregistrer
+                  votre rendez-vous dans l'agenda de l'exploitant et le prévenir. Base légale : mesures
+                  précontractuelles prises à votre demande.
                 </li>
                 <li>
                   <strong className={strong}>Accompagnement.</strong> Informations utiles au suivi de vos séances
@@ -138,8 +139,8 @@ export default function PolitiqueConfidentialite() {
 
             <Section title="3. Ce que ce site ne fait pas">
               <p>
-                Hormis le formulaire de réservation d'un rendez-vous, ce site ne contient aucun formulaire de
-                collecte. Il n'utilise aucun outil de mesure d'audience, aucune publicité et ne dépose aucun cookie
+                Hormis le formulaire de contact et le formulaire de réservation d'un rendez-vous, ce site ne
+                contient aucun formulaire de collecte. Il n'utilise aucun outil de mesure d'audience, aucune publicité et ne dépose aucun cookie
                 de suivi. Les polices de caractères sont hébergées avec le site : votre
                 navigateur ne contacte aucun service tiers pour les afficher. Vous n'avez donc aucun bandeau de
                 consentement à renseigner.
@@ -156,11 +157,14 @@ export default function PolitiqueConfidentialite() {
                 d'hébergement.
               </p>
               <p>
-                La réservation en ligne s'appuie sur des prestataires techniques qui traitent vos données pour le
-                compte de l'exploitant : Google (Google Agenda, pour inscrire le rendez-vous dans l'agenda de
-                l'exploitant), Resend (envoi de l'e-mail de confirmation) et Upstash (stockage des créneaux et des
-                réservations). Certains peuvent traiter des données hors de l'Union européenne, dans le cadre des
-                garanties prévues par le RGPD. [À compléter : vérifier la région d'hébergement choisie pour chacun.]
+                Le fonctionnement du site s'appuie sur des prestataires techniques qui traitent des données pour le
+                compte de l'exploitant : Google (Google Agenda, où sont enregistrés les rendez-vous), Neon (base de
+                données des créneaux proposés et des tarifs : aucune donnée personnelle de visiteur n'y est
+                enregistrée), Formspree (réception du formulaire de contact et des notifications de rendez-vous par
+                e-mail), et, si ce service est activé, Resend (envoi des e-mails de confirmation). Si vous cliquez sur
+                le bouton WhatsApp, votre échange est ensuite soumis aux conditions de WhatsApp. Certains de ces
+                prestataires peuvent traiter des données hors de l'Union européenne, dans le cadre des garanties
+                prévues par le RGPD. [À compléter : vérifier la région d'hébergement choisie pour chacun.]
               </p>
               <p>{infos.partenaire}</p>
             </Section>
@@ -168,7 +172,8 @@ export default function PolitiqueConfidentialite() {
             <Section title="5. Combien de temps sont-elles conservées ?">
               <ul className="list-disc space-y-2 pl-5">
                 <li><strong className={strong}>Demande de contact sans suite :</strong> 3 ans après le dernier échange.</li>
-                <li><strong className={strong}>Réservation en ligne :</strong> les informations saisies dans le formulaire sont supprimées automatiquement du site 6 mois après la date du rendez-vous. L'événement inscrit à l'agenda de l'exploitant est conservé [À compléter : durée].</li>
+                <li><strong className={strong}>Réservation en ligne :</strong> l'événement inscrit à l'agenda de l'exploitant est conservé [À compléter : durée].</li>
+                <li><strong className={strong}>Messages reçus par le formulaire de contact :</strong> [À compléter : durée de conservation dans la messagerie de l'exploitant et chez Formspree].</li>
                 <li><strong className={strong}>Données de suivi d'accompagnement :</strong> pendant la durée de l'accompagnement, puis [À compléter : durée] après la dernière séance.</li>
                 <li><strong className={strong}>Pièces comptables (factures) :</strong> 10 ans, conformément à la loi.</li>
               </ul>

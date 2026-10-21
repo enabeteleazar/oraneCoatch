@@ -1,6 +1,6 @@
 {
   "include": ["src/**/*", "shared/**/*", "api/**/*", "vite.config.ts", "vite-api-dev.ts"],
-  "exclude": ["node_modules", "build", "dist", "src/components/Contact.tsx", "src/components/ui/**", "**/*.test.ts"],
+  "exclude": ["node_modules", "build", "dist", "**/*.test.ts"],
   "compilerOptions": {
     "incremental": true,
     "tsBuildInfoFile": ".tsbuildinfo",

@@ -118,15 +118,15 @@ export default function AdminTarifs({ session, onSessionExpiree }: { session: Se
         <p className="mt-2 text-xs text-muted-foreground">Aucun tarif enregistré pour l'instant : le site utilise les valeurs d'origine.</p>
       )}
 
-      {session.stockage === "aucun" && (
+      {session.stockage === "aucune" && (
         <p role="alert" className="mt-6 rounded-2xl border border-destructive/40 bg-destructive/5 p-5 text-sm leading-[1.8]">
-          <strong className="font-medium">Stockage non configuré.</strong> Les modifications ne pourront pas être enregistrées. Dans Vercel :
-          Storage → Marketplace → Upstash Redis, puis redéployez.
+          <strong className="font-medium">Base de données non configurée.</strong> Les modifications ne pourront pas être enregistrées.
+          Définissez la variable <code>DATABASE_URL</code> (connexion Neon), puis redéployez.
         </p>
       )}
-      {session.stockage === "fichier" && (
+      {session.stockage === "local" && (
         <p className="mt-6 rounded-2xl border border-primary/25 bg-[#f1eee3] p-4 text-xs leading-[1.8]">
-          Mode développement : les données sont enregistrées dans le fichier local <code>.data/store.json</code>.
+          Mode développement : les données sont enregistrées dans une base locale (<code>.data/pglite</code>).
         </p>
       )}
 
@@ -177,7 +177,7 @@ export default function AdminTarifs({ session, onSessionExpiree }: { session: Se
       </section>
 
       <div className="mt-6 flex flex-wrap items-center gap-4">
-        <button type="submit" disabled={enregistrement || validation.ok === false || session.stockage === "aucun"} className={boutonCss}>
+        <button type="submit" disabled={enregistrement || validation.ok === false || session.stockage === "aucune"} className={boutonCss}>
           <Save size={16} /> {enregistrement ? "Enregistrement…" : "Enregistrer les tarifs"}
         </button>
         <p role="status" aria-live="polite" className={`text-sm ${message?.type === "erreur" ? "text-destructive" : "text-primary"}`}>

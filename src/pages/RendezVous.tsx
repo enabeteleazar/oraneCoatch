@@ -1,22 +1,26 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Link } from "wouter";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, CalendarCheck, CalendarX, Check, Leaf, Phone } from "lucide-react";
+import { ArrowLeft, CalendarCheck, CalendarPlus, CalendarX, Check, Leaf, Phone } from "lucide-react";
 import { LIBELLE_TYPE, TELEPHONE_CONTACT, cleJour, formaterHeure, formaterJour, type Creneau, type TypeCreneau } from "../../shared/rdv";
 import { appeler, messageErreur } from "@/lib/api";
+import { envoyerFormspree, formspreeConfigure } from "@/lib/contact";
+import { creerIcs } from "../../shared/ics";
 import { Tarif, useTarifs } from "@/lib/tarifs";
 import EncartUrgence from "@/components/EncartUrgence";
 
 const telHref = "tel:+33686544766";
 const JOURS_AFFICHES = 8;
 
-type Confirmation = { jour: string; heure: string; type: TypeCreneau; emailEnvoye: boolean; email: string };
+type Confirmation = { jour: string; heure: string; type: TypeCreneau; debut: string; fin: string; emailEnvoye: boolean; prevenu: boolean; email: string };
 
-async function chargerCreneaux(): Promise<Creneau[]> {
+type ReponseCreneaux = { creneaux: Creneau[]; reservationDisponible: boolean };
+
+async function chargerCreneaux(): Promise<ReponseCreneaux> {
   const r = await appeler("rdv");
-  if (r.status === 404) return []; // pas d'API (hébergement statique)
+  if (r.status === 404) return { creneaux: [], reservationDisponible: false }; // pas d'API (hébergement statique)
   if (!r.ok) throw new Error(messageErreur(r, "Créneaux indisponibles"));
-  return (r.data?.creneaux as Creneau[]) ?? [];
+  return { creneaux: (r.data?.creneaux as Creneau[]) ?? [], reservationDisponible: r.data?.reservationDisponible !== false };
 }
 
 const champ =
@@ -29,13 +33,16 @@ export default function RendezVous() {
   const tarifs = useTarifs();
   const formRef = useRef<HTMLFormElement>(null);
 
-  const { data: creneaux, isPending, isError, refetch } = useQuery({
+  const { data, isPending, isError, refetch } = useQuery({
     queryKey: ["creneaux"],
     queryFn: chargerCreneaux,
     staleTime: 15_000,
     refetchOnWindowFocus: true,
     retry: 1,
   });
+
+  const creneaux = data?.creneaux;
+  const reservationDisponible = data?.reservationDisponible !== false;
 
   const [filtre, setFiltre] = useState<TypeCreneau | "tous">("tous");
   const [joursVisibles, setJoursVisibles] = useState(JOURS_AFFICHES);
@@ -78,6 +85,24 @@ export default function RendezVous() {
   const detailType = (t: TypeCreneau) =>
     t === "decouverte" ? `${tarifs.decouverte.duree} · ${tarifs.decouverte.prix}` : `${tarifs.seance.duree} · ${tarifs.seance.prix}`;
 
+  function telechargerIcs(c: Confirmation) {
+    const contenu = creerIcs({
+      uid: c.debut,
+      debutIso: c.debut,
+      finIso: c.fin,
+      titre: `${libelleType(c.type)} : ORANE`,
+      description: `Rendez-vous avec ORANE. Pour modifier ou annuler : ${TELEPHONE_CONTACT}.`,
+    });
+    const url = URL.createObjectURL(new Blob([contenu], { type: "text/calendar;charset=utf-8" }));
+    const lien = document.createElement("a");
+    lien.href = url;
+    lien.download = "rendez-vous-orane.ics";
+    document.body.appendChild(lien);
+    lien.click();
+    lien.remove();
+    URL.revokeObjectURL(url);
+  }
+
   async function reserver(e: FormEvent) {
     e.preventDefault();
     if (!creneauChoisi) {
@@ -93,8 +118,26 @@ export default function RendezVous() {
     setEnvoi(false);
 
     if (r.ok && r.data?.rdv) {
-      const rdv = r.data.rdv as { jour: string; heure: string; type: TypeCreneau };
-      setConfirmation({ jour: rdv.jour, heure: rdv.heure, type: rdv.type, emailEnvoye: r.data.emailEnvoye === true, email });
+      const rdv = r.data.rdv as { jour: string; heure: string; type: TypeCreneau; debut: string; fin: string };
+      const emailEnvoye = r.data.emailEnvoye === true;
+
+      // Sans service d'e-mail côté serveur, ORANE est prévenu(e) par Formspree (depuis le navigateur).
+      let prevenu = false;
+      if (!emailEnvoye && formspreeConfigure()) {
+        const envoi = await envoyerFormspree({
+          _subject: `Nouveau rendez-vous : ${nom.trim()}, ${rdv.jour} à ${rdv.heure}`,
+          name: nom.trim(),
+          email: email.trim(),
+          phone: telephone.trim(),
+          rendez_vous: `${rdv.jour} à ${rdv.heure}`,
+          type: libelleType(rdv.type),
+          message: message.trim(),
+          _gotcha: "",
+        });
+        prevenu = envoi.ok;
+      }
+
+      setConfirmation({ jour: rdv.jour, heure: rdv.heure, type: rdv.type, debut: rdv.debut, fin: rdv.fin, emailEnvoye, prevenu, email });
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
       setErreur(messageErreur(r, `La réservation a échoué. Réessayez ou appelez le ${TELEPHONE_CONTACT}.`));
@@ -149,11 +192,14 @@ export default function RendezVous() {
                 </>
               ) : (
                 <>
-                  Nous n'avons pas pu vous envoyer l'e-mail de confirmation. Notez bien la date et l'heure ci-dessus : votre rendez-vous
-                  est bien enregistré.
+                  Votre rendez-vous est bien enregistré. Notez la date et l'heure ci-dessus
+                  {confirmation.prevenu ? " : ORANE en a été informé(e) par e-mail." : "."}
                 </>
               )}
             </p>
+            <button type="button" onClick={() => telechargerIcs(confirmation)} className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-primary underline underline-offset-4">
+              <CalendarPlus size={16} aria-hidden="true" /> Ajouter à mon agenda
+            </button>
             <p className="mt-4 text-sm leading-[1.8] text-foreground/65">
               Pour modifier ou annuler, appelez le{" "}
               <a href={telHref} className="text-primary underline underline-offset-4">{TELEPHONE_CONTACT}</a>.
@@ -226,9 +272,11 @@ export default function RendezVous() {
                 <div className="mt-8 flex gap-4 rounded-2xl border border-primary/25 bg-[#f1eee3] p-6">
                   <CalendarX size={24} strokeWidth={1.4} className="mt-0.5 shrink-0 text-primary" aria-hidden="true" />
                   <div className="text-sm leading-[1.85] text-foreground/75">
-                    <p className="font-medium text-foreground">Aucun créneau disponible pour le moment.</p>
+                    <p className="font-medium text-foreground">
+                      {reservationDisponible ? "Aucun créneau disponible pour le moment." : "La réservation en ligne n'est pas disponible pour le moment."}
+                    </p>
                     <p className="mt-1">
-                      De nouveaux créneaux sont régulièrement ajoutés. Vous pouvez aussi appeler le{" "}
+                      {reservationDisponible ? "De nouveaux créneaux sont régulièrement ajoutés. Vous pouvez aussi appeler le" : "Vous pouvez prendre rendez-vous en appelant le"}{" "}
                       <a href={telHref} className="text-primary underline underline-offset-4">{TELEPHONE_CONTACT}</a>.
                     </p>
                   </div>

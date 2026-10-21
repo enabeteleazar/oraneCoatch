@@ -1,21 +1,43 @@
-export const FUSEAU = "Europe/Paris";
+/**
+ * Prise de rendez-vous : types, fuseau horaire et validations partagés entre le site
+ * (navigateur) et l'API (serveur). TypeScript pur, sans dépendance.
+ */
+
+export const FUSEAU_PAR_DEFAUT = "Europe/Paris";
+let fuseau = FUSEAU_PAR_DEFAUT;
+/** Fuseau horaire des rendez-vous (variable BOOKING_TIME_ZONE côté serveur, VITE_BOOKING_TIME_ZONE côté site). */
+export const fuseauActuel = () => fuseau;
+export function definirFuseau(tz?: string | null): void {
+  if (!tz) return;
+  try {
+    new Intl.DateTimeFormat("en", { timeZone: tz });
+    fuseau = tz;
+  } catch {
+    /* fuseau inconnu : on garde la valeur actuelle */
+  }
+}
+
+const formateurs = new Map<string, Intl.DateTimeFormat>();
+function formateur(locale: string, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
+  const cle = `${fuseau}|${locale}|${JSON.stringify(options)}`;
+  let f = formateurs.get(cle);
+  if (!f) {
+    f = new Intl.DateTimeFormat(locale, { ...options, timeZone: fuseau });
+    formateurs.set(cle, f);
+  }
+  return f;
+}
 export const TELEPHONE_CONTACT = "06 86 54 47 66";
-export const DELAI_MIN_RESERVATION_HEURES = 24;
 
-export const TYPES_CRENEAU = ["decouverte", "seance"] as const;
-export type TypeCreneau = (typeof TYPES_CRENEAU)[number];
-
+export type TypeCreneau = "decouverte" | "seance";
+export const TYPES_CRENEAU: TypeCreneau[] = ["decouverte", "seance"];
 export const LIBELLE_TYPE: Record<TypeCreneau, string> = {
   decouverte: "Séance découverte",
   seance: "Séance individuelle",
 };
 
-export type Creneau = {
-  id: string;
-  debut: string;
-  fin: string;
-  type: TypeCreneau;
-};
+/** Dates stockées en ISO UTC (ex. « 2026-11-03T13:30:00.000Z »). */
+export type Creneau = { id: string; debut: string; fin: string; type: TypeCreneau };
 
 export type Reservation = {
   creneauId: string;
@@ -27,135 +49,117 @@ export type Reservation = {
   eventId?: string;
 };
 
-type ChampsDate = { year: number; month: number; day: number; hour: number; minute: number };
+/** Un créneau n'est réservable en ligne que s'il commence dans plus de N heures. */
+export const DELAI_MIN_RESERVATION_HEURES = 12;
 
-const dateFormat = new Intl.DateTimeFormat("fr-FR", {
-  timeZone: FUSEAU,
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-  hour: "2-digit",
-  minute: "2-digit",
-  hourCycle: "h23",
-});
+/* ------------------------------------------------------------------ */
+/* Heure de Paris <-> UTC (sans bibliothèque)                           */
+/* ------------------------------------------------------------------ */
 
-function champsDate(date: Date): ChampsDate {
-  const parts = dateFormat.formatToParts(date);
-  const valeur = (type: Intl.DateTimeFormatPartTypes) => Number(parts.find((p) => p.type === type)?.value);
-  return {
-    year: valeur("year"),
-    month: valeur("month"),
-    day: valeur("day"),
-    hour: valeur("hour"),
-    minute: valeur("minute"),
-  };
+/** Heure « murale » du fuseau des rendez-vous à l'instant `ms`, exprimée comme si elle était en UTC. */
+function murale(ms: number): number {
+  const p: Record<string, string> = {};
+  const f = formateur("en-CA", { hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  for (const part of f.formatToParts(ms)) p[part.type] = part.value;
+  return Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute, +p.second);
 }
 
-function enDateLocale(date: Date): number {
-  const p = champsDate(date);
-  return Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute);
+/** « 2026-11-03 » + « 14:30 » (heure locale du fuseau des rendez-vous) → millisecondes UTC, ou null si invalide / inexistante. */
+export function localVersUtc(date: string, heure: string): number | null {
+  const d = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
+  const h = /^(\d{2}):(\d{2})$/.exec(heure);
+  if (!d || !h) return null;
+  const [annee, mois, jour, hh, mm] = [+d[1], +d[2], +d[3], +h[1], +h[2]];
+  if (mois < 1 || mois > 12 || jour < 1 || jour > 31 || hh > 23 || mm > 59) return null;
+
+  const naif = Date.UTC(annee, mois - 1, jour, hh, mm);
+  if (new Date(naif).getUTCDate() !== jour) return null; // ex. 31 février
+  const essai1 = naif - (murale(naif) - naif);
+  const essai2 = naif - (murale(essai1) - essai1);
+  return murale(essai2) === naif ? essai2 : null; // null : heure inexistante (passage à l'heure d'été)
 }
 
-function versInstant(date: string, heure: string): number | null {
-  const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
-  const heureMatch = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(heure);
-  if (!dateMatch || !heureMatch) return null;
-  const [, y, m, d] = dateMatch;
-  const [, h, min] = heureMatch;
-  const annee = Number(y);
-  const mois = Number(m);
-  const jour = Number(d);
-  const heureNum = Number(h);
-  const minute = Number(min);
-  const cibleLocale = Date.UTC(annee, mois - 1, jour, heureNum, minute);
-  const verif = new Date(cibleLocale);
-  if (verif.getUTCFullYear() !== annee || verif.getUTCMonth() + 1 !== mois || verif.getUTCDate() !== jour) return null;
-
-  let instant = cibleLocale;
-  for (let i = 0; i < 3; i++) instant += cibleLocale - enDateLocale(new Date(instant));
-  const p = champsDate(new Date(instant));
-  return p.year === annee && p.month === mois && p.day === jour && p.hour === heureNum && p.minute === minute ? instant : null;
+/** Ajoute des jours à une date « AAAA-MM-JJ » (calendrier, indépendant des fuseaux). */
+export function ajouterJours(date: string, jours: number): string {
+  const [a, m, j] = date.split("-").map(Number);
+  return new Date(Date.UTC(a, m - 1, j + jours)).toISOString().slice(0, 10);
 }
 
+/** « AAAA-MM-JJ » (heure locale) d'un instant. */
 export function cleJour(iso: string): string {
-  const p = champsDate(new Date(iso));
-  return `${p.year}-${String(p.month).padStart(2, "0")}-${String(p.day).padStart(2, "0")}`;
-}
-
-export function formaterHeure(iso: string): string {
-  return new Intl.DateTimeFormat("fr-FR", {
-    timeZone: FUSEAU,
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-  }).format(new Date(iso));
+  return formateur("en-CA", { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(iso));
 }
 
 export function formaterJour(iso: string): string {
-  return new Intl.DateTimeFormat("fr-FR", {
-    timeZone: FUSEAU,
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(new Date(iso));
+  const texte = formateur("fr-FR", { weekday: "long", day: "numeric", month: "long" }).format(new Date(iso));
+  return texte.charAt(0).toUpperCase() + texte.slice(1);
 }
 
 export function formaterJourComplet(iso: string): string {
-  return new Intl.DateTimeFormat("fr-FR", {
-    timeZone: FUSEAU,
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(new Date(iso));
+  const texte = formateur("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(new Date(iso));
+  return texte.charAt(0).toUpperCase() + texte.slice(1);
 }
 
-export type GenerationCreneaux =
-  | { ok: true; creneaux: { debut: number; fin: number }[] }
-  | { ok: false; erreur: string };
+export function formaterHeure(iso: string): string {
+  return formateur("fr-FR", { hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(iso));
+}
 
-export function genererCreneaux(input: {
-  date: string;
-  debut: string;
-  fin: string;
+/* ------------------------------------------------------------------ */
+/* Génération de créneaux                                               */
+/* ------------------------------------------------------------------ */
+
+export const MAX_CRENEAUX_PAR_CREATION = 300;
+export const MAX_SEMAINES = 26;
+
+export type PlageEntree = {
+  date: string; // « AAAA-MM-JJ », heure locale
+  debut: string; // « HH:MM »
+  fin: string; // « HH:MM »
   dureeMinutes: number;
   pauseMinutes: number;
   semaines: number;
-}): GenerationCreneaux {
-  const { date, debut, fin, dureeMinutes, pauseMinutes, semaines } = input;
-  if (!Number.isInteger(dureeMinutes) || dureeMinutes < 1 || dureeMinutes > 480) {
-    return { ok: false, erreur: "La durée de séance est invalide." };
+};
+
+export type PlageResultat = { ok: true; creneaux: { debut: number; fin: number }[] } | { ok: false; erreur: string };
+
+/** Découpe chaque plage horaire en créneaux consécutifs ; répète la plage chaque semaine. */
+export function genererCreneaux(p: PlageEntree): PlageResultat {
+  if (!Number.isInteger(p.dureeMinutes) || p.dureeMinutes < 5) return { ok: false, erreur: "Durée de séance invalide." };
+  if (!Number.isInteger(p.pauseMinutes) || p.pauseMinutes < 0 || p.pauseMinutes > 180) {
+    return { ok: false, erreur: "La pause doit être comprise entre 0 et 180 minutes." };
   }
-  if (!Number.isInteger(pauseMinutes) || pauseMinutes < 0 || pauseMinutes > 240) {
-    return { ok: false, erreur: "La pause doit être un nombre entier entre 0 et 240 minutes." };
-  }
-  if (!Number.isInteger(semaines) || semaines < 1 || semaines > 52) {
-    return { ok: false, erreur: "Le nombre de semaines doit être compris entre 1 et 52." };
+  if (!Number.isInteger(p.semaines) || p.semaines < 1 || p.semaines > MAX_SEMAINES) {
+    return { ok: false, erreur: `Le nombre de semaines doit être compris entre 1 et ${MAX_SEMAINES}.` };
   }
 
   const creneaux: { debut: number; fin: number }[] = [];
-  for (let semaine = 0; semaine < semaines; semaine++) {
-    const jour = new Date(`${date}T12:00:00Z`);
-    if (Number.isNaN(jour.getTime())) return { ok: false, erreur: "Choisissez une date valide." };
-    jour.setUTCDate(jour.getUTCDate() + semaine * 7);
-    const dateSemaine = `${jour.getUTCFullYear()}-${String(jour.getUTCMonth() + 1).padStart(2, "0")}-${String(jour.getUTCDate()).padStart(2, "0")}`;
-    const debutMs = versInstant(dateSemaine, debut);
-    const finMs = versInstant(dateSemaine, fin);
-    if (debutMs === null || finMs === null) {
-      return { ok: false, erreur: "L'heure ou la date est invalide (les heures inexistantes lors du changement d'heure ne sont pas acceptées)." };
+  for (let semaine = 0; semaine < p.semaines; semaine++) {
+    const jour = ajouterJours(p.date, 7 * semaine);
+    const debutPlage = localVersUtc(jour, p.debut);
+    const finPlage = localVersUtc(jour, p.fin);
+    if (debutPlage === null || finPlage === null) {
+      return { ok: false, erreur: `Date ou heure invalide pour le ${jour} (heure inexistante ?).` };
     }
-    if (finMs <= debutMs) return { ok: false, erreur: "L'heure de fin doit être après l'heure de début." };
+    if (finPlage <= debutPlage) return { ok: false, erreur: "L'heure de fin doit être après l'heure de début." };
 
-    const pas = (dureeMinutes + pauseMinutes) * 60_000;
-    for (let debutCreneau = debutMs; debutCreneau + dureeMinutes * 60_000 <= finMs; debutCreneau += pas) {
-      creneaux.push({ debut: debutCreneau, fin: debutCreneau + dureeMinutes * 60_000 });
-      if (creneaux.length > 500) return { ok: false, erreur: "Cette plage génère trop de créneaux." };
+    let debut = debutPlage;
+    while (debut + p.dureeMinutes * 60_000 <= finPlage) {
+      creneaux.push({ debut, fin: debut + p.dureeMinutes * 60_000 });
+      if (creneaux.length > MAX_CRENEAUX_PAR_CREATION) {
+        return { ok: false, erreur: `Trop de créneaux d'un coup (maximum ${MAX_CRENEAUX_PAR_CREATION}).` };
+      }
+      debut += (p.dureeMinutes + p.pauseMinutes) * 60_000;
     }
   }
-  if (creneaux.length === 0) return { ok: false, erreur: "La plage est trop courte pour créer un créneau." };
+  if (creneaux.length === 0) {
+    return { ok: false, erreur: "La plage est trop courte pour contenir un créneau de cette durée." };
+  }
   return { ok: true, creneaux };
 }
+
+/* ------------------------------------------------------------------ */
+/* Validation d'une réservation                                         */
+/* ------------------------------------------------------------------ */
 
 export type DemandeReservation = {
   creneauId: string;
@@ -163,36 +167,39 @@ export type DemandeReservation = {
   telephone: string;
   email: string;
   message: string;
-  consentement: boolean;
+  consentement: true;
+  /** Champ piège pour les robots : doit rester vide. */
   site: string;
 };
 
-export type ValidationReservation =
-  | { ok: true; demande: DemandeReservation }
-  | { ok: false; erreur: string };
+export type ValidationReservation = { ok: true; demande: DemandeReservation } | { ok: false; erreur: string };
+
+const sansControle = (s: string) => !/[\u0000-\u001f\u007f]/.test(s);
 
 export function validerReservation(entree: unknown): ValidationReservation {
-  if (typeof entree !== "object" || entree === null || Array.isArray(entree)) {
-    return { ok: false, erreur: "Le formulaire est invalide." };
-  }
-  const o = entree as Record<string, unknown>;
-  const texte = (valeur: unknown) => (typeof valeur === "string" ? valeur.trim() : "");
-  const creneauId = texte(o.creneauId);
-  const nom = texte(o.nom);
-  const telephone = texte(o.telephone);
-  const email = texte(o.email);
-  const message = texte(o.message);
-  const site = texte(o.site);
+  if (typeof entree !== "object" || entree === null) return { ok: false, erreur: "Demande invalide." };
+  const e = entree as Record<string, unknown>;
+  const texte = (v: unknown) => (typeof v === "string" ? v.trim() : "");
 
-  if (!creneauId || creneauId.length > 64) return { ok: false, erreur: "Choisissez un créneau valide." };
-  if (nom.length < 2 || nom.length > 100) return { ok: false, erreur: "Le nom doit contenir entre 2 et 100 caractères." };
-  if (telephone.length < 8 || telephone.length > 30 || !/^[+\d().\s-]+$/.test(telephone)) {
-    return { ok: false, erreur: "Saisissez un numéro de téléphone valide." };
+  const creneauId = texte(e.creneauId);
+  const nom = texte(e.nom).replace(/\s+/g, " ");
+  const telephone = texte(e.telephone);
+  const email = texte(e.email).toLowerCase();
+  const message = typeof e.message === "string" ? e.message.trim() : "";
+  const site = texte(e.site);
+
+  if (!creneauId || creneauId.length > 64) return { ok: false, erreur: "Choisissez un créneau." };
+  if (nom.length < 2 || nom.length > 100 || !sansControle(nom)) return { ok: false, erreur: "Indiquez votre nom (2 à 100 caractères)." };
+  const chiffres = telephone.replace(/\D/g, "");
+  if (!/^[0-9+\s().-]{9,25}$/.test(telephone) || chiffres.length < 9 || chiffres.length > 15) {
+    return { ok: false, erreur: "Indiquez un numéro de téléphone valide." };
   }
-  if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return { ok: false, erreur: "Saisissez une adresse e-mail valide." };
+  if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+    return { ok: false, erreur: "Indiquez une adresse e-mail valide." };
   }
-  if (message.length > 500) return { ok: false, erreur: "Le message ne peut pas dépasser 500 caractères." };
-  if (o.consentement !== true) return { ok: false, erreur: "Veuillez accepter le traitement des données pour confirmer votre demande." };
+  if (message.length > 500) return { ok: false, erreur: "Le message est limité à 500 caractères." };
+  if (e.consentement !== true) {
+    return { ok: false, erreur: "Vous devez accepter l'utilisation de vos informations pour réserver." };
+  }
   return { ok: true, demande: { creneauId, nom, telephone, email, message, consentement: true, site } };
 }

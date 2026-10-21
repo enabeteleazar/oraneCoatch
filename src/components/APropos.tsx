@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Award, GraduationCap, Leaf } from "lucide-react";
+import { Award, Check, GraduationCap, Leaf } from "lucide-react";
 
 /**
  * ⚠️ À COMPLÉTER : cette section s'affiche dès qu'au moins un champ ci-dessous est renseigné.
@@ -19,19 +19,23 @@ import { Award, GraduationCap, Leaf } from "lucide-react";
 const AFFICHER_A_PROPOS = true;
 
 const profil = {
-  nom: "Orane Marie",
-  titre: "Thérapeute",
-  photo: "images/aboutMe.jpg", // fichier déposé dans public/images/
-  photoAlt: "Portrait de ORANE",
-  bio: [
-    "J'accompagne des personnes qui traversent un moment difficile : fatigue, sentiment d'être dépassé(e), besoin d'être entendu(e).",
-    "Je propose un espace d'écoute bienveillant et confidentiel, pour vous aider à retrouver votre équilibre et votre sérénité.",
-    "Mon approche s'appuie sur la conviction profonde que vous possédez déjà toutes les ressources nécessaires pour atteindre votre équilibre. Mon rôle est de vous aider à mettre en lumière ce potentiel.",
-  ],
+  nom: null as string | null, // ex. "Prénom Nom"
+  titre: null as string | null, // ex. l'intitulé exact de votre activité
+  photo: null as string | null, // ex. "images/orane.webp"
+  photoAlt: "Portrait de votre accompagnante ou accompagnant",
+  bio: [] as string[], // un ou deux courts paragraphes : parcours, ce qui vous a menée ou mené ici
   formations: [] as string[], // ex. "Intitulé du diplôme, organisme, année"
   certifications: [] as string[], // ex. "Intitulé de la certification, organisme, année"
-  methode: [] as string[],
-}; 
+  // Votre façon de travailler : une liste de principes (titre + courte phrase)
+  methode: [
+    { titre: "Écoute", texte: "Une présence attentive sans jugement." },
+    { titre: "Accompagnement", texte: "Un guide à vos côtés, pas à pas." },
+    { titre: "Confiance", texte: "Un espace sûr pour vous exprimer." },
+    { titre: "Progression", texte: "Avancer à votre rythme vers vos objectifs." },
+    { titre: "Équilibre de vie", texte: "Harmoniser vos différentes sphères de vie." },
+  ] as { titre: string; texte: string }[],
+};
+
 const fade = {
   hidden: { opacity: 0, y: 22 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" as const } },
@@ -69,7 +73,7 @@ export default function APropos() {
 
   return (
     <section id="a-propos" className="bg-[#e9e7dc] py-20 md:py-28">
-      <div className={`mx-auto grid max-w-[1120px] gap-12 px-6 md:px-10 ${photoSrc ? "md:grid-cols-[.8fr_1.2fr] md:items-start md:gap-20" : "max-w-[820px]"}`}>
+      <div className={`mx-auto grid gap-12 px-6 md:px-10 ${photoSrc ? "max-w-[1120px] md:grid-cols-[.8fr_1.2fr] md:items-start md:gap-20" : "max-w-[820px]"}`}>
         {photoSrc && (
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} variants={fade} className="relative mx-auto w-full max-w-[420px] md:mx-0">
             <div className="absolute -inset-3 rotate-[-2deg] rounded-[48%_48%_4px_4px] bg-[#dedbca]" />
@@ -112,11 +116,19 @@ export default function APropos() {
           {profil.methode.length > 0 && (
             <div className="mt-10 border-t border-primary/20 pt-8">
               <h3 className="display-serif text-3xl">Ma façon de travailler</h3>
-              <div className="mt-4 space-y-4 text-base leading-[1.9] text-foreground/75">
-                {profil.methode.map((paragraphe) => (
-                  <p key={paragraphe}>{paragraphe}</p>
+              <ul className="mt-6 space-y-4">
+                {profil.methode.map(({ titre, texte }) => (
+                  <li key={titre} className="flex items-start gap-3">
+                    <span className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/15">
+                      <Check size={14} className="text-primary" aria-hidden="true" />
+                    </span>
+                    <p className="text-base leading-[1.75] text-foreground/75">
+                      <strong className="font-medium text-foreground">{titre}</strong>
+                      <span className="ml-2">{texte}</span>
+                    </p>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
           )}
         </motion.div>

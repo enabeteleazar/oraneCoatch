@@ -1,40 +1,35 @@
+import "../_lib/config.js";
 import { json } from "../_lib/http.js";
 import { exigerAdmin } from "../_lib/auth.js";
 import { modeStockage } from "../_lib/store.js";
-import { supprimerEvenement } from "../_lib/google.js";
+import { agendaConfigure, evenementDuCreneau, supprimerEvenement } from "../_lib/google.js";
 import { envoyerEmail } from "../_lib/email.js";
 import { emailAnnulation } from "../_lib/emails-rdv.js";
-import { libererCreneau, lireCreneaux, lireReservations } from "../_lib/rdv-store.js";
+import { libererVerrou, lireCreneau } from "../_lib/rdv-store.js";
 
-/** Annule un rendez-vous (?id=<id du créneau>) : supprime l'événement Google Agenda, prévient la personne, rouvre le créneau. */
+/** Annule un rendez-vous (?id=<id du créneau>) : supprime l'événement Google Agenda et rouvre le créneau. */
 export async function DELETE(request: Request) {
   const refus = exigerAdmin(request, true);
   if (refus) return refus;
-  if (modeStockage() === "aucun") return json({ erreur: "Aucun stockage configuré." }, { status: 503 });
+  if (modeStockage() === "aucune" || !agendaConfigure()) return json({ erreur: "Base de données ou Google Agenda non configurés." }, { status: 503 });
 
   const id = new URL(request.url).searchParams.get("id") ?? "";
   if (!id || id.length > 64) return json({ erreur: "Créneau inconnu." }, { status: 400 });
 
   try {
-    const creneau = (await lireCreneaux()).find((c) => c.id === id);
-    const reservation = (await lireReservations([id])).get(id);
-    if (!creneau || !reservation) return json({ erreur: "Aucun rendez-vous sur ce créneau." }, { status: 404 });
+    const evenement = await evenementDuCreneau(id);
+    if (!evenement) return json({ erreur: "Aucun rendez-vous sur ce créneau." }, { status: 404 });
 
-    let agendaSupprime = true;
-    if (reservation.eventId) {
-      try {
-        await supprimerEvenement(reservation.eventId);
-      } catch (erreur) {
-        console.error("Suppression de l'événement Google Agenda impossible", erreur);
-        agendaSupprime = false;
-      }
-    }
+    await supprimerEvenement(evenement.id);
+    await libererVerrou(id);
 
-    await libererCreneau(id);
-    const emailEnvoye = await envoyerEmail({ ...emailAnnulation(creneau, reservation), a: reservation.email });
-    return json({ ok: true, agendaSupprime, emailEnvoye });
+    // Prévenir la personne par e-mail n'est possible que si un service d'envoi (Resend) est configuré.
+    const creneau = await lireCreneau(id);
+    const emailEnvoye =
+      creneau && evenement.client?.email ? await envoyerEmail({ ...emailAnnulation(creneau, evenement.client), a: evenement.client.email }) : false;
+    return json({ ok: true, agendaSupprime: true, emailEnvoye });
   } catch (erreur) {
     console.error("Annulation impossible", erreur);
-    return json({ erreur: "L'annulation a échoué. Réessayez dans un instant." }, { status: 502 });
+    return json({ erreur: "L'annulation a échoué (Google Agenda injoignable ?). Réessayez dans un instant." }, { status: 502 });
   }
 }

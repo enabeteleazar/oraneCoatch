@@ -14,7 +14,10 @@ import { appeler, messageErreur } from "@/lib/api";
 import { boutonCss, boutonDiscretCss, champCss, type Session } from "./commun";
 
 type CreneauAdmin = Creneau & {
+  /** libre : aucun événement ; reserve : réservation faite via le site ; occupe : autre événement de l'agenda. */
+  etat: "libre" | "reserve" | "occupe";
   reservation: { nom: string; telephone: string; email: string; message: string; creeLe: string } | null;
+  evenement: { titre: string } | null;
 };
 
 const aujourdhui = () => cleJour(new Date().toISOString());
@@ -23,6 +26,7 @@ export default function AdminCreneaux({ session, onSessionExpiree }: { session: 
   const [creneaux, setCreneaux] = useState<CreneauAdmin[] | null>(null);
   const [tarifs, setTarifs] = useState<Tarifs>(TARIFS_PAR_DEFAUT);
   const [erreurListe, setErreurListe] = useState("");
+  const [avertissementAgenda, setAvertissementAgenda] = useState<string | null>(null);
 
   const [type, setType] = useState<TypeCreneau>("seance");
   const [date, setDate] = useState(aujourdhui());
@@ -39,6 +43,7 @@ export default function AdminCreneaux({ session, onSessionExpiree }: { session: 
     if (liste.status === 401) return onSessionExpiree();
     if (liste.ok) {
       setCreneaux((liste.data?.creneaux as CreneauAdmin[]) ?? []);
+      setAvertissementAgenda(typeof liste.data?.agendaErreur === "string" ? liste.data.agendaErreur : null);
       setErreurListe("");
     } else {
       setErreurListe(messageErreur(liste, "Impossible de charger les créneaux."));
@@ -95,7 +100,7 @@ export default function AdminCreneaux({ session, onSessionExpiree }: { session: 
 
   async function annuler(c: CreneauAdmin) {
     const nom = c.reservation?.nom ?? "cette personne";
-    if (!window.confirm(`Annuler le rendez-vous de ${nom} (${formaterJour(c.debut)} à ${formaterHeure(c.debut)}) ?\n\nL'événement sera retiré de Google Agenda, la personne sera prévenue par e-mail et le créneau redeviendra libre.`)) return;
+    if (!window.confirm(`Annuler le rendez-vous de ${nom} (${formaterJour(c.debut)} à ${formaterHeure(c.debut)}) ?\n\nL'événement sera retiré de Google Agenda et le créneau redeviendra libre.`)) return;
     setActionEnCours(c.id);
     const r = await appeler(`admin/rdv?id=${encodeURIComponent(c.id)}`, { method: "DELETE" });
     setActionEnCours(null);
@@ -123,37 +128,50 @@ export default function AdminCreneaux({ session, onSessionExpiree }: { session: 
     return [...groupes.entries()];
   }, [creneaux]);
 
-  const reserves = (creneaux ?? []).filter((c) => c.reservation && Date.parse(c.fin) > Date.now()).length;
+  const reserves = (creneaux ?? []).filter((c) => c.etat === "reserve" && Date.parse(c.fin) > Date.now()).length;
 
   return (
     <div>
       <h2 className="display-serif text-3xl leading-tight md:text-4xl">Rendez-vous</h2>
       <p className="mt-3 max-w-[600px] text-sm leading-[1.8] text-foreground/70">
         Créez les plages où vous êtes disponible : elles sont découpées en créneaux que les visiteurs peuvent réserver sur la
-        page « Prendre rendez-vous ».
+        page « Prendre rendez-vous ». Google Agenda fait foi : un créneau n'est plus proposé dès qu'un événement de l'agenda le chevauche.
       </p>
 
-      {session.stockage === "aucun" && (
+      {session.stockage === "aucune" && (
         <p role="alert" className="mt-5 rounded-2xl border border-destructive/40 bg-destructive/5 p-4 text-sm leading-[1.8]">
-          <strong className="font-medium">Stockage non configuré :</strong> ajoutez Upstash Redis (Vercel → Storage → Marketplace).
+          <strong className="font-medium">Base de données non configurée :</strong> définissez <code>DATABASE_URL</code> (connexion Neon).
         </p>
       )}
       {!session.agenda && (
-        <p className="mt-4 flex gap-2 rounded-2xl border border-primary/30 bg-[#f1eee3] p-4 text-xs leading-[1.8]">
-          <AlertTriangle size={15} className="mt-0.5 shrink-0 text-primary" aria-hidden="true" />
+        <p role="alert" className="mt-4 flex gap-2 rounded-2xl border border-destructive/40 bg-destructive/5 p-4 text-xs leading-[1.8]">
+          <AlertTriangle size={15} className="mt-0.5 shrink-0 text-destructive" aria-hidden="true" />
           <span>
-            <strong className="font-medium">Google Agenda non configuré :</strong> les rendez-vous seront enregistrés ici mais n'apparaîtront pas
-            dans votre agenda. Variables à définir : <code>GOOGLE_CLIENT_EMAIL</code>, <code>GOOGLE_PRIVATE_KEY</code>, <code>GOOGLE_CALENDAR_ID</code>.
+            <strong className="font-medium">Google Agenda non configuré : la réservation en ligne est désactivée.</strong> Variables à définir :{" "}
+            <code>GOOGLE_SERVICE_ACCOUNT_EMAIL</code>, <code>GOOGLE_PRIVATE_KEY</code> et <code>GOOGLE_CALENDAR_ID</code> (ou{" "}
+            <code>GOOGLE_CALENDAR_NAME</code>, « rdv-coach » par défaut).
           </span>
         </p>
       )}
-      {!session.email && (
+      {avertissementAgenda && (
+        <p role="alert" className="mt-4 flex gap-2 rounded-2xl border border-destructive/40 bg-destructive/5 p-4 text-xs leading-[1.8]">
+          <AlertTriangle size={15} className="mt-0.5 shrink-0 text-destructive" aria-hidden="true" />
+          <span>{avertissementAgenda}</span>
+        </p>
+      )}
+      {!session.email && !session.formspree && (
         <p className="mt-4 flex gap-2 rounded-2xl border border-primary/30 bg-[#f1eee3] p-4 text-xs leading-[1.8]">
           <AlertTriangle size={15} className="mt-0.5 shrink-0 text-primary" aria-hidden="true" />
           <span>
-            <strong className="font-medium">E-mails non configurés :</strong> aucune confirmation ne sera envoyée aux personnes qui réservent.
-            Variables à définir : <code>RESEND_API_KEY</code>, <code>EMAIL_FROM</code> (et <code>NOTIFY_EMAIL</code> pour être prévenu(e)).
+            <strong className="font-medium">Aucun service d'e-mail configuré :</strong> vous ne serez pas prévenu(e) par e-mail des nouvelles réservations
+            (elles apparaissent dans Google Agenda). Définissez <code>VITE_FORMSPREE_ENDPOINT</code> (Formspree) ou <code>RESEND_API_KEY</code>.
           </span>
+        </p>
+      )}
+      {session.formspree && !session.email && (
+        <p className="mt-4 rounded-2xl border border-primary/25 bg-[#f1eee3] p-4 text-xs leading-[1.8]">
+          E-mails via Formspree : vous recevez chaque réservation par e-mail. La personne qui réserve ne reçoit de confirmation que si le
+          module « Autoresponse » est activé dans votre formulaire Formspree (offres payantes).
         </p>
       )}
 
@@ -208,7 +226,7 @@ export default function AdminCreneaux({ session, onSessionExpiree }: { session: 
         </p>
 
         <div className="mt-5 flex flex-wrap items-center gap-4">
-          <button type="submit" disabled={creation || apercu.ok === false || session.stockage === "aucun"} className={boutonCss}>
+          <button type="submit" disabled={creation || apercu.ok === false || session.stockage === "aucune"} className={boutonCss}>
             <CalendarPlus size={16} /> {creation ? "Création…" : "Créer les créneaux"}
           </button>
         </div>
@@ -238,11 +256,11 @@ export default function AdminCreneaux({ session, onSessionExpiree }: { session: 
                         {formaterHeure(c.debut)} – {formaterHeure(c.fin)}
                       </span>
                       <span className="text-xs text-muted-foreground">{LIBELLE_TYPE[c.type]}</span>
-                      <span className={`rounded-full px-3 py-1 text-xs ${c.reservation ? "bg-primary/15 text-primary" : "bg-[#ece8da] text-foreground/65"}`}>
-                        {c.reservation ? "Réservé" : "Libre"}
+                      <span className={`rounded-full px-3 py-1 text-xs ${c.etat === "reserve" ? "bg-primary/15 text-primary" : c.etat === "occupe" ? "bg-[#e9d9c4] text-[#7a5a2e]" : "bg-[#ece8da] text-foreground/65"}`}>
+                        {c.etat === "reserve" ? "Réservé" : c.etat === "occupe" ? "Occupé (agenda)" : "Libre"}
                       </span>
                       <span className="ml-auto">
-                        {c.reservation ? (
+                        {c.etat === "reserve" ? (
                           <button type="button" disabled={actionEnCours === c.id} onClick={() => annuler(c)} className={boutonDiscretCss}>
                             <XCircle size={14} /> Annuler le rendez-vous
                           </button>
@@ -253,7 +271,12 @@ export default function AdminCreneaux({ session, onSessionExpiree }: { session: 
                         )}
                       </span>
                     </div>
-                    {c.reservation && (
+                    {c.etat === "occupe" && c.evenement && (
+                      <p className="mt-3 rounded-xl bg-[#f1eee3] p-3 text-xs leading-[1.7] text-foreground/70">
+                        Un événement de Google Agenda occupe ce créneau : « {c.evenement.titre} ». Il n'est donc pas proposé en ligne.
+                      </p>
+                    )}
+                    {c.etat === "reserve" && c.reservation && (
                       <div className="mt-3 rounded-xl bg-[#f1eee3] p-3 text-sm leading-[1.8]">
                         <p className="font-medium">{c.reservation.nom}</p>
                         <p className="mt-1 flex flex-wrap gap-x-5 gap-y-1 text-foreground/75">
