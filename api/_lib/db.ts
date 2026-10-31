@@ -52,7 +52,11 @@ async function creerExecuteur(): Promise<Executeur> {
   }
   if (modeBase() === "local") {
     const nomPaquet = "@electric-sql/pglite"; // nom en variable : jamais embarqué dans les fonctions Vercel
-    const { PGlite } = await import(/* @vite-ignore */ nomPaquet);
+    const { PGlite } = await import(/* @vite-ignore */ nomPaquet).catch(() => {
+      throw new Error(
+        "DATABASE_URL n'est pas défini et la base locale n'est pas installée : renseignez DATABASE_URL dans .env.local (connexion Neon) ou lancez « pnpm add -D @electric-sql/pglite ».",
+      );
+    });
     const dossier = process.env.PGLITE_DIR ?? ".data/pglite";
     const { mkdir } = await import("node:fs/promises");
     const { dirname } = await import("node:path");

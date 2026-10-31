@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
-import { AlertTriangle, CalendarPlus, Mail, Phone, Trash2, XCircle } from "lucide-react";
+import { AlertTriangle, Bell, CalendarPlus, Mail, Phone, Trash2, XCircle } from "lucide-react";
 import { TARIFS_PAR_DEFAUT, validerTarifs, type Tarifs } from "../../../shared/tarifs";
 import {
   LIBELLE_TYPE,
@@ -37,6 +37,7 @@ export default function AdminCreneaux({ session, onSessionExpiree }: { session: 
   const [creation, setCreation] = useState(false);
   const [message, setMessage] = useState<{ type: "ok" | "erreur"; texte: string } | null>(null);
   const [actionEnCours, setActionEnCours] = useState<string | null>(null);
+  const [testEnCours, setTestEnCours] = useState(false);
 
   const charger = useCallback(async () => {
     const [liste, t] = await Promise.all([appeler("admin/creneaux"), appeler("tarifs")]);
@@ -86,6 +87,25 @@ export default function AdminCreneaux({ session, onSessionExpiree }: { session: 
     } else {
       setMessage({ type: "erreur", texte: messageErreur(r, "La création a échoué.") });
     }
+  }
+
+  async function tester() {
+    setTestEnCours(true);
+    setMessage(null);
+    const r = await appeler("admin/notification-test", { method: "POST", body: "{}" });
+    setTestEnCours(false);
+    if (r.status === 401) return onSessionExpiree();
+    const resultats = (r.data?.resultats as { canal: string; ok: boolean; erreur?: string }[] | undefined) ?? [];
+    if (!r.ok || resultats.length === 0) {
+      setMessage({ type: "erreur", texte: messageErreur(r, "Le test a échoué.") });
+      return;
+    }
+    const echecs = resultats.filter((x) => !x.ok);
+    setMessage(
+      echecs.length === 0
+        ? { type: "ok", texte: `Alerte de test envoyée (${resultats.map((x) => x.canal).join(", ")}). Vérifiez votre téléphone.` }
+        : { type: "erreur", texte: echecs.map((x) => `${x.canal} : ${x.erreur ?? "échec"}`).join(" · ") },
+    );
   }
 
   async function supprimer(c: CreneauAdmin) {
@@ -159,12 +179,13 @@ export default function AdminCreneaux({ session, onSessionExpiree }: { session: 
           <span>{avertissementAgenda}</span>
         </p>
       )}
-      {!session.email && !session.formspree && (
+      {!session.email && !session.formspree && session.alertes.length === 0 && (
         <p className="mt-4 flex gap-2 rounded-2xl border border-primary/30 bg-[#f1eee3] p-4 text-xs leading-[1.8]">
           <AlertTriangle size={15} className="mt-0.5 shrink-0 text-primary" aria-hidden="true" />
           <span>
-            <strong className="font-medium">Aucun service d'e-mail configuré :</strong> vous ne serez pas prévenu(e) par e-mail des nouvelles réservations
-            (elles apparaissent dans Google Agenda). Définissez <code>VITE_FORMSPREE_ENDPOINT</code> (Formspree) ou <code>RESEND_API_KEY</code>.
+            <strong className="font-medium">Aucune alerte configurée :</strong> vous ne serez pas prévenu(e) des nouvelles réservations
+            (elles apparaissent dans Google Agenda). Définissez <code>VITE_FORMSPREE_ENDPOINT</code> (e-mail), ou une alerte instantanée :
+            WhatsApp (<code>WHATSAPP_CLOUD_TOKEN</code>…) ou ntfy (<code>NTFY_TOPIC</code>).
           </span>
         </p>
       )}
@@ -174,6 +195,20 @@ export default function AdminCreneaux({ session, onSessionExpiree }: { session: 
           module « Autoresponse » est activé dans votre formulaire Formspree (offres payantes).
         </p>
       )}
+
+      <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-primary/20 p-4 text-sm">
+        <Bell size={16} className="text-primary" aria-hidden="true" />
+        {session.alertes.length > 0 ? (
+          <>
+            <span className="text-foreground/80">Alerte instantanée à chaque réservation : <strong className="font-medium">{session.alertes.join(", ")}</strong></span>
+            <button type="button" disabled={testEnCours} onClick={tester} className={`${boutonDiscretCss} ml-auto`}>
+              {testEnCours ? "Envoi…" : "Envoyer une alerte de test"}
+            </button>
+          </>
+        ) : (
+          <span className="text-foreground/65">Aucune alerte instantanée (WhatsApp ou ntfy) n'est configurée : voir <code>.env.example</code>.</span>
+        )}
+      </div>
 
       <form onSubmit={creer} className="mt-8 rounded-2xl border border-primary/20 bg-[#f1eee3] p-5 md:p-6">
         <h3 className="display-serif text-2xl">Ajouter des créneaux</h3>

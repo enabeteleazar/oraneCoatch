@@ -5,6 +5,7 @@ import { cleIp, origineValide } from "./_lib/auth.js";
 import { agendaConfigure, chevauche, creerEvenement, occupations } from "./_lib/google.js";
 import { adresseNotification, envoyerEmail } from "./_lib/email.js";
 import { emailConfirmation, emailNotification } from "./_lib/emails-rdv.js";
+import { alerter } from "./_lib/notifier.js";
 import { incrementer, lireCompteur, modeStockage } from "./_lib/store.js";
 import { libererVerrou, lireCreneau, lireCreneauxEntre, prendreVerrou } from "./_lib/rdv-store.js";
 
@@ -103,7 +104,9 @@ export async function POST(request: Request) {
 
     // E-mails optionnels (Resend). Sans Resend, le site prévient ORANE via Formspree depuis le navigateur.
     const notification = adresseNotification();
-    const [emailEnvoye] = await Promise.all([
+    const [, emailEnvoye] = await Promise.all([
+      // Alerte instantanée pour ORANE (WhatsApp / ntfy) : sans coordonnées du client, détails dans Google Agenda.
+      alerter({ jour: formaterJourComplet(creneau.debut), heure: formaterHeure(creneau.debut), type: LIBELLE_TYPE[creneau.type], lien: `${new URL(request.url).origin}/admin` }),
       envoyerEmail({ ...emailConfirmation(creneau, client), a: client.email, repondreA: notification }),
       notification ? envoyerEmail({ ...emailNotification(creneau, client), a: notification, repondreA: client.email }) : Promise.resolve(false),
     ]);

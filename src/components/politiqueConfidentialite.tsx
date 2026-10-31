@@ -161,7 +161,8 @@ export default function PolitiqueConfidentialite() {
                 compte de l'exploitant : Google (Google Agenda, où sont enregistrés les rendez-vous), Neon (base de
                 données des créneaux proposés et des tarifs : aucune donnée personnelle de visiteur n'y est
                 enregistrée), Formspree (réception du formulaire de contact et des notifications de rendez-vous par
-                e-mail), et, si ce service est activé, Resend (envoi des e-mails de confirmation). Si vous cliquez sur
+                e-mail), et, si ce service est activé, Resend (envoi des e-mails de confirmation). Pour prévenir l'exploitant d'une nouvelle réservation, un message ne contenant que la date, l'heure et
+                le type de séance (aucune coordonnée) peut être envoyé via WhatsApp (Meta) ou ntfy. Si vous cliquez sur
                 le bouton WhatsApp, votre échange est ensuite soumis aux conditions de WhatsApp. Certains de ces
                 prestataires peuvent traiter des données hors de l'Union européenne, dans le cadre des garanties
                 prévues par le RGPD. [À compléter : vérifier la région d'hébergement choisie pour chacun.]

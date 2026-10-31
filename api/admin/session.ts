@@ -15,6 +15,7 @@ import {
 import { incrementer, lireCompteur, modeStockage, supprimer } from "../_lib/store.js";
 import { agendaConfigure } from "../_lib/google.js";
 import { emailConfigure } from "../_lib/email.js";
+import { canauxAlerte } from "../_lib/notifier.js";
 
 /** État de la session : sert à afficher le formulaire de connexion ou le tableau de bord. */
 export async function GET(request: Request) {
@@ -25,6 +26,7 @@ export async function GET(request: Request) {
     agenda: agendaConfigure(),
     email: emailConfigure(),
     formspree: Boolean(process.env.VITE_FORMSPREE_ENDPOINT),
+    alertes: canauxAlerte(),
   });
 }
 

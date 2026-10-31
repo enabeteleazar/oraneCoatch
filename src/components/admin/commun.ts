@@ -1,5 +1,5 @@
 export type Stockage = "neon" | "local" | "aucune";
-export type Session = { configure: boolean; authentifie: boolean; stockage: Stockage; agenda: boolean; email: boolean; formspree: boolean };
+export type Session = { configure: boolean; authentifie: boolean; stockage: Stockage; agenda: boolean; email: boolean; formspree: boolean; alertes: string[] };
 
 export const champCss =
   "h-12 w-full rounded-xl border border-primary/25 bg-[#fbf9f3] px-4 text-base outline-none transition-colors focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/30";
