@@ -1,28 +1,53 @@
-import { getClientIp } from "../_clientIp.js";
-import { withTransaction } from "../_database.js";
+import { getClientIp } from "./_clientIp.js";
+import {
+  checkDatabaseAccess,
+  isDatabaseConfigured,
+  withTransaction,
+} from "./_database.js";
+import { countActiveBookingSlots } from "./_bookingSlots.js";
 import {
   BOOKING_ACTION,
   getExpectedHostnames,
   verifyTurnstileToken,
-} from "../_turnstile.js";
+} from "./_turnstile.js";
 import {
   buildAvailability,
   createBooking,
   findSlot,
+  getCalendarId,
+  getGoogleEventsCount,
+  isGoogleCalendarConfigured,
   json,
   parseBody,
   sanitize,
-} from "../_googleCalendar.js";
+} from "./_googleCalendar.js";
 
-// Verrou applicatif Postgres partagé par toutes les réservations : deux
-// requêtes simultanées ne peuvent pas vérifier puis créer un rendez-vous en
-// même temps. La seconde attend la fin de la première, puis relit Google
-// Calendar et voit le créneau déjà pris.
+const BOOKING_ROUTE_PARAM = "__booking_route";
 const BOOKING_LOCK_KEY = "equilibre-coaching:booking";
 const BOOKING_LOCK_TIMEOUT = "15s";
 const LOCK_TIMEOUT_ERROR_CODE = "55P03";
 
 class SlotUnavailableError extends Error {}
+
+function getRoute(req) {
+  const url = new URL(req.url ?? "/", "http://localhost");
+  const rewrittenRoute = url.searchParams.get(BOOKING_ROUTE_PARAM);
+
+  if (rewrittenRoute === "availability" || rewrittenRoute === "health") {
+    return rewrittenRoute;
+  }
+
+  switch (url.pathname) {
+    case "/api/bookings":
+      return "bookings";
+    case "/api/bookings/availability":
+      return "availability";
+    case "/api/bookings/health":
+      return "health";
+    default:
+      return null;
+  }
+}
 
 function validatePayload(payload) {
   const name = sanitize(payload?.name);
@@ -65,7 +90,7 @@ function validatePayload(payload) {
   return { value: { name, phone, start, end, turnstileToken } };
 }
 
-export default async function handler(req, res) {
+async function handleBooking(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return json(res, 405, { error: "Méthode non autorisée." });
@@ -75,7 +100,7 @@ export default async function handler(req, res) {
 
   try {
     payload = await parseBody(req);
-  } catch (error) {
+  } catch {
     return json(res, 400, { error: "La requête est invalide." });
   }
 
@@ -146,5 +171,89 @@ export default async function handler(req, res) {
           ? error.message
           : "La réservation n'a pas pu être validée.",
     });
+  }
+}
+
+async function handleAvailability(req, res) {
+  if (req.method !== "GET") {
+    res.setHeader("Allow", "GET");
+    return json(res, 405, { error: "Méthode non autorisée." });
+  }
+
+  try {
+    const availability = await buildAvailability();
+    return json(res, 200, availability);
+  } catch (error) {
+    console.error("[bookings/availability]", error);
+    return json(res, 500, {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Les disponibilités n'ont pas pu être chargées.",
+    });
+  }
+}
+
+async function handleHealth(req, res) {
+  if (req.method !== "GET") {
+    res.setHeader("Allow", "GET");
+    return json(res, 405, { error: "Méthode non autorisée." });
+  }
+
+  const databaseConfigured = isDatabaseConfigured();
+  let databaseAccess = false;
+  let databaseSlotsCount = 0;
+
+  if (databaseConfigured) {
+    try {
+      await checkDatabaseAccess();
+      databaseSlotsCount = await countActiveBookingSlots();
+      databaseAccess = true;
+    } catch (error) {
+      console.error("[bookings/health] Postgres inaccessible:", {
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
+  const googleCalendarConfigured = isGoogleCalendarConfigured();
+  let googleCalendarAccess = false;
+  let googleEventsCount = 0;
+
+  if (googleCalendarConfigured) {
+    try {
+      if (databaseAccess) {
+        googleEventsCount = await getGoogleEventsCount();
+      } else {
+        await getCalendarId();
+      }
+      googleCalendarAccess = true;
+    } catch (error) {
+      console.error("[bookings/health] Google Calendar inaccessible:", {
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
+  return json(res, 200, {
+    database_configured: databaseConfigured,
+    database_access: databaseAccess,
+    database_slots_count: databaseSlotsCount,
+    google_calendar_configured: googleCalendarConfigured,
+    google_calendar_access: googleCalendarAccess,
+    google_events_count: googleEventsCount,
+  });
+}
+
+export default async function handler(req, res) {
+  switch (getRoute(req)) {
+    case "bookings":
+      return handleBooking(req, res);
+    case "availability":
+      return handleAvailability(req, res);
+    case "health":
+      return handleHealth(req, res);
+    default:
+      return json(res, 404, { error: "Ressource introuvable." });
   }
 }

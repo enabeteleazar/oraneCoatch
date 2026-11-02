@@ -3,7 +3,17 @@
   "installCommand": "pnpm install --frozen-lockfile",
   "buildCommand": "pnpm build",
   "outputDirectory": "dist/public",
-  "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }],
+  "rewrites": [
+    {
+      "source": "/api/bookings/availability",
+      "destination": "/api/bookings?__booking_route=availability"
+    },
+    {
+      "source": "/api/bookings/health",
+      "destination": "/api/bookings?__booking_route=health"
+    },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ],
   "headers": [
     {
       "source": "/admin",
