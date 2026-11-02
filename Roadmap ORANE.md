@@ -13,7 +13,6 @@ Site ORANE – Coach thérapeutique · Mise à jour du 18 octobre 2026
 ## Phase 2 : Confiance et contenu
 
 - [x] Ajouter une section « À propos » (nom, photo, formation, certifications, méthode)
-- [x] Expliquer le partenariat ADOMSAP (ce que c'est, lien éventuel)
 - [x] Préciser le public cible et le déroulé d'une séance
 - [x] Confirmer la durée et le tarif de la séance individuelle (creation d'une pade admin pour gestion des tarifs)
 - [x] Ajouter une FAQ

@@ -45,7 +45,6 @@ export default function Home() {
     { href: "#approche", label: "L'approche" },
     { href: "#accompagnement", label: "L'accompagnement" },
     { href: "#formules", label: "Formules" },
-    { href: "#partenariat", label: "Partenariat" },
     { href: "/rendez-vous", label: "Prendre rendez-vous", page: true },
   ];
 
@@ -113,9 +112,6 @@ export default function Home() {
                 <span>À votre rythme, en toute confiance</span>
               </motion.div>
             </div>
-          </div>
-          <div className="absolute bottom-0 right-0 hidden items-center gap-3 bg-[#747b5c] px-8 py-4 text-[.68rem] tracking-[.16em] text-[#fbf8f0] sm:flex md:px-12">
-            <span className="h-px w-8 bg-[#d8d5be]" /> PARTENARIAT AVEC ADOMSAP
           </div>
           <a href="#repere" aria-label="Défiler vers la suite" className="absolute bottom-7 left-6 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-primary/30 text-primary transition hover:bg-primary hover:text-primary-foreground md:left-[7.2%]">
             <ArrowDown size={16} />
@@ -232,23 +228,6 @@ export default function Home() {
 
         <Temoignages />
 
-        <section id="partenariat" className="relative bg-[#747b5c] px-6 py-20 text-[#f8f5eb] md:px-10 md:py-24">
-          <div className="absolute inset-y-0 right-0 hidden w-[38%] overflow-hidden opacity-20 md:block">
-            <div className="absolute -right-20 -top-28 h-[500px] w-[500px] rounded-full border border-[#efeddf]" />
-            <div className="absolute -right-4 -top-14 h-[380px] w-[380px] rounded-full border border-[#efeddf]" />
-          </div>
-          <div className="relative mx-auto flex max-w-[1120px] flex-col gap-8 md:flex-row md:items-center md:justify-between">
-            <div className="max-w-[710px]">
-              <p className="eyebrow mb-5 text-[#e0dfca]">Un partenariat de confiance</p>
-              <h2 className="display-serif text-4xl leading-tight md:text-[3.5rem]">Un accompagnement en partenariat avec <span className="italic">ADOMSAP</span></h2>
-              <p className="mt-5 max-w-[590px] text-sm leading-[1.9] text-[#f0eedf]/85">Un cadre de présence et d'écoute pour vous aider à traverser le moment, avec douceur et respect de votre rythme.</p>
-            </div>
-            <Link href="/partenariat-adomsap" className="group inline-flex shrink-0 items-center gap-3 self-start rounded-full border border-[#e5e3d1]/55 px-6 py-4 text-sm text-[#fbf8ef] transition-colors hover:bg-[#f8f5eb] hover:text-primary md:self-center">
-              En savoir plus <ArrowUpRight size={16} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-            </Link>
-          </div>
-        </section>
-
         <Faq />
 
         <section id="contact" className="relative overflow-hidden bg-[#f2eee4] py-20 md:py-28">
@@ -314,7 +293,6 @@ export default function Home() {
             <span className="text-[.58rem] tracking-[.13em] text-muted-foreground">COACH THÉRAPEUTIQUE</span>
           </a>
           <div className="flex flex-col gap-3 text-xs text-foreground/65 sm:flex-row sm:items-center sm:gap-7">
-            <Link href="/partenariat-adomsap" className="transition-colors hover:text-primary">Partenariat avec ADOMSAP</Link>
             <a href={phone} className="transition-colors hover:text-primary">06 86 54 47 66</a>
             <a href={externalSite} target="_blank" rel="noreferrer" className="transition-colors hover:text-primary">orane-coach-therapeutique.fr</a>
             <Link href="/mentions-legales" className="transition-colors hover:text-primary">Mentions légales</Link>

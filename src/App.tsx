@@ -8,7 +8,6 @@ import Admin from "@/pages/Admin";
 import RendezVous from "@/pages/RendezVous";
 import MentionLegale from "@/components/mentionLegale";
 import PolitiqueConfidentialite from "@/components/politiqueConfidentialite";
-import PartenariatAdomsap from "@/components/partenariatAdomsap";
 
 const queryClient = new QueryClient();
 
@@ -18,7 +17,6 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/mentions-legales" component={MentionLegale} />
       <Route path="/politique-de-confidentialite" component={PolitiqueConfidentialite} />
-      <Route path="/partenariat-adomsap" component={PartenariatAdomsap} />
       <Route path="/rendez-vous" component={RendezVous} />
       <Route path="/admin" component={Admin} />
       <Route component={NotFound} />

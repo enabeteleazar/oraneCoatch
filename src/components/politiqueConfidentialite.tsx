@@ -18,7 +18,6 @@ const infos = {
   telephone: "06 86 54 47 66",
   telephoneHref: "tel:+33686544766",
   hebergeur: "[À compléter : nom de l'hébergeur]",
-  partenaire: "[À compléter : indiquer si des données sont partagées avec ADOMSAP et dans quel cadre, ou supprimer cette phrase]",
   miseAJour: "18 octobre 2026",
 };
 
@@ -167,7 +166,6 @@ export default function PolitiqueConfidentialite() {
                 prestataires peuvent traiter des données hors de l'Union européenne, dans le cadre des garanties
                 prévues par le RGPD. [À compléter : vérifier la région d'hébergement choisie pour chacun.]
               </p>
-              <p>{infos.partenaire}</p>
             </Section>
 
             <Section title="5. Combien de temps sont-elles conservées ?">

@@ -96,16 +96,6 @@ const construireQuestions = (t: TarifsAffichage): { question: string; reponse: R
     ),
   },
   {
-    question: "Quel est le rôle d'ADOMSAP ?",
-    reponse: (
-      <p>
-        ORANE propose son accompagnement en partenariat avec ADOMSAP, une coopérative de services à la personne.
-        Tout est expliqué sur la page{" "}
-        <Link href="/partenariat-adomsap" className={lien}>Partenariat avec ADOMSAP</Link>.
-      </p>
-    ),
-  },
-  {
     question: "Que faire si je suis en danger ou en grande détresse ?",
     reponse: (
       <p>

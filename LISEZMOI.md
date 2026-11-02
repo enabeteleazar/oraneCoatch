@@ -1,7 +1,7 @@
 # ORANE : site de coaching
 
 Site vitrine (React + Vite + Tailwind) avec :
-- page d'accueil, mentions légales, politique de confidentialité, page ADOMSAP ;
+- page d'accueil, mentions légales et politique de confidentialité ;
 - prise de rendez-vous en ligne (`/rendez-vous`) reliée à Google Agenda ;
 - espace d'administration (`/admin`) protégé par mot de passe : tarifs du site et créneaux de rendez-vous.
 
