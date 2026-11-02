@@ -2,21 +2,22 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
+import { apiDev } from "./vite-api-dev.ts";
 
-const port = Number(process.env.PORT ?? 3000);
+const rawPort = process.env.PORT ?? "5173";
+const port = Number(rawPort);
 
-if (Number.isNaN(port) || port <= 0) {
-  throw new Error(`Invalid PORT value: "${process.env.PORT}"`);
+if (!Number.isInteger(port) || port < 1 || port > 65535) {
+  throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-const basePath = process.env.BASE_PATH ?? "/";
-
 export default defineConfig({
-  base: basePath,
-  plugins: [react(), tailwindcss()],
+  base: process.env.BASE_PATH ?? "/",
+  plugins: [react(), tailwindcss(), apiDev()],
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "src"),
+      "@assets": path.resolve(import.meta.dirname, "..", "..", "attached_assets"),
     },
     dedupe: ["react", "react-dom"],
   },

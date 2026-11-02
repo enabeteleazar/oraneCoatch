@@ -1,13 +1,17 @@
 {
-  "installCommand": "npm install",
-  "buildCommand": "npm run build",
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "buildCommand": "pnpm build",
   "outputDirectory": "dist/public",
-  "devCommand": "npm run dev",
-  "framework": "vite",
-  "rewrites": [
+  "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }],
+  "headers": [
     {
-      "source": "/dashboard",
-      "destination": "/index.html"
+      "source": "/admin",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "Cache-Control", "value": "no-store" }
+      ]
     }
   ]
 }
