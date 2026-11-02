@@ -5,6 +5,14 @@
   "outputDirectory": "dist/public",
   "rewrites": [
     {
+      "source": "/api/admin/pricing-plans/:id",
+      "destination": "/api/admin/pricing-plans?__admin_route=item&__admin_id=:id"
+    },
+    {
+      "source": "/api/admin/booking-slots/:id",
+      "destination": "/api/admin/booking-slots?__admin_route=item&__admin_id=:id"
+    },
+    {
       "source": "/api/bookings/availability",
       "destination": "/api/bookings?__booking_route=availability"
     },
