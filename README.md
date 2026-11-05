@@ -1,71 +1,53 @@
-# Equilibre Coaching
+# ORANE — Coach thérapeutique
+
+Site React/Vite avec fonctions API Vercel, base PostgreSQL Neon et intégration
+Google Agenda.
+
+## Développement et vérifications
+
+```bash
+pnpm install
+pnpm dev
+pnpm test
+pnpm typecheck
+pnpm build
+```
+
+Le serveur Vite local sert aussi les routes de `api/`. Sans `DATABASE_URL`, il
+utilise la base locale PGlite dans `.data/`.
 
 ## Configuration
 
-Créer une variable d'environnement Vite pour l'envoi du formulaire de contact via Formspree :
+Copier `.env.example` vers `.env.local`. Sur Vercel, définir les variables dans
+les bons environnements et redéployer après une modification.
 
-```env
-VITE_FORMSPREE_ENDPOINT=https://formspree.io/f/xxxxxxx
-```
+Variables principales :
 
-Créer une variable d'environnement Vite pour le bouton WhatsApp de la rubrique Contact :
+| Variable | Usage |
+| --- | --- |
+| `DATABASE_URL` | Connexion PostgreSQL/Neon ; indispensable en production. |
+| `ADMIN_PASSWORD` | Mot de passe de `/admin` (10 caractères minimum). |
+| `GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_PRIVATE_KEY` | Accès serveur à Google Agenda. |
+| `GOOGLE_CALENDAR_ID` ou `GOOGLE_CALENDAR_NAME` | Calendrier des rendez-vous. |
+| `BOOKING_TIME_ZONE` | Fuseau des créneaux, par défaut `Europe/Paris`. |
+| `VITE_FORMSPREE_ENDPOINT`, `VITE_WHATSAPP_PHONE` | Fonctions publiques du site ; valeurs intégrées au navigateur. |
+| `VITE_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | Protection anti-robot, clé publique et clé secrète respectivement. |
 
-```env
-VITE_WHATSAPP_PHONE=336XXXXXXXX
-```
+Les autres intégrations (Resend, alertes WhatsApp/ntfy) sont facultatives.
+Ne jamais placer de secret dans une variable `VITE_*` : ces variables sont
+publiées dans le bundle client. La liste complète et les exemples sont dans
+[`.env.example`](./.env.example).
 
-## Réservation Neon/Postgres + Google Calendar
+## Créneaux et réservations
 
-Les créneaux proposés par le coach sont lus depuis Neon/Postgres dans la table
-`booking_slots`. Google Calendar reste la source des réservations réelles :
-chaque réservation crée un événement dans le calendrier `rdv-coach`, et un
-créneau est affiché réservé lorsqu'un événement Google chevauche son horaire.
+- `booking_slots` est la table principale, utilisée par `/admin`, `/api/rdv`
+  et le parcours de réservation associé.
+- `booking_slots_legacy` est conservée pour l’ancienne API `/api/admin/booking-slots`
+  et les routes `/api/bookings`.
+- À la première requête API, le schéma historique est archivé et ses créneaux
+  compatibles sont migrés vers la table principale. Les deux tables restent
+  disponibles ; les modifications ultérieures dans une table ne sont pas
+  répliquées dans l’autre.
 
-Créer un compte de service Google Cloud, partager le calendrier `rdv-coach`
-avec l'e-mail de ce compte, puis configurer :
-
-```env
-DATABASE_URL=postgresql://...
-GOOGLE_SERVICE_ACCOUNT_EMAIL=service-account@project.iam.gserviceaccount.com
-GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
-GOOGLE_CALENDAR_ID=...
-GOOGLE_CALENDAR_NAME=rdv-coach
-BOOKING_TIME_ZONE=Europe/Paris
-ADMIN_PASSWORD=...
-```
-
-Optionnel : définir `GOOGLE_CALENDAR_ID` pour cibler directement un calendrier sans recherche par nom.
-
-### Protection du dashboard
-
-Après 5 mots de passe erronés en 15 minutes, l'adresse IP est bloquée
-15 minutes sur toutes les routes admin (réponse 429). Les tentatives sont
-stockées dans la table `admin_login_attempts`, créée automatiquement au
-premier usage.
-
-La page `/dashboard` affiche le menu principal et garde la même URL pour la
-gestion des créneaux et des formules de la table `pricing_plans`. Les routes
-admin, dont la vérification d'accès au dashboard, attendent le mot de passe en
-en-tête `x-admin-password`.
-La section publique Tarifs lit les formules actives depuis `/api/pricing-plans`.
-
-## Anti-robot Cloudflare Turnstile
-
-La réservation est protégée par Cloudflare Turnstile. Créer un widget sur
-https://dash.cloudflare.com (menu Turnstile, mode *Managed*) avec les
-hostnames `localhost`, `127.0.0.1` et le(s) domaine(s) de production, puis :
-
-```env
-VITE_TURNSTILE_SITE_KEY=0x4AAAAAAA...   # clé du site (publique)
-TURNSTILE_SECRET_KEY=0x4AAAAAAA...      # clé secrète (serveur uniquement)
-TURNSTILE_ALLOWED_HOSTNAMES=coach.example.fr,www.coach.example.fr  # optionnel
-```
-
-Le serveur (`api/_turnstile.js`) applique la vérification canonique
-siteverify : `success === true`, `action === "booking"` et `hostname` dans
-`TURNSTILE_ALLOWED_HOSTNAMES` (à défaut : le domaine qui reçoit la requête).
-Les jetons sont à usage unique. Si Cloudflare est injoignable, la réservation
-est refusée avec une erreur 503.
-
-Sans `TURNSTILE_SECRET_KEY`, la vérification est désactivée côté serveur ;
-sans `VITE_TURNSTILE_SITE_KEY`, le widget n'est pas affiché.
+Pour tester un déploiement Preview sans toucher aux données de production,
+configurer une base Neon distincte pour l’environnement Preview.

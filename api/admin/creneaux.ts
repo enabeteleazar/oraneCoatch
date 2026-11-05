@@ -18,7 +18,9 @@ export async function GET(request: Request) {
   if (modeStockage() === "aucune") return json(SANS_BASE, { status: 503 });
 
   try {
-    await purgerAnciensCreneaux().catch(() => undefined);
+    await purgerAnciensCreneaux().catch((erreur) => {
+      console.warn("Nettoyage des anciens créneaux impossible", erreur);
+    });
     const depuis = new Date(Date.now() - 24 * 3_600_000).toISOString();
     const jusqua = new Date(Date.now() + 180 * 86_400_000).toISOString();
     const creneaux = await lireCreneauxEntre(depuis, jusqua, false, true);
