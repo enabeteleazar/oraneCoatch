@@ -24,7 +24,7 @@ export async function DELETE(request: Request) {
     await libererVerrou(id);
 
     // Prévenir la personne par e-mail n'est possible que si un service d'envoi (Resend) est configuré.
-    const creneau = await lireCreneau(id);
+    const creneau = await lireCreneau(id, true);
     const emailEnvoye =
       creneau && evenement.client?.email ? await envoyerEmail({ ...emailAnnulation(creneau, evenement.client), a: evenement.client.email }) : false;
     return json({ ok: true, agendaSupprime: true, emailEnvoye });

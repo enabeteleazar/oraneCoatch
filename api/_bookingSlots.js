@@ -15,7 +15,7 @@ const DEFAULT_TIME_ZONE = "Europe/Paris";
 // ensuite à la minute près dans buildAvailability().
 const ACTIVE_SLOTS_QUERY = `
   SELECT ${BOOKING_SLOT_COLUMNS}
-  FROM booking_slots
+  FROM booking_slots_legacy
   WHERE enabled = true
     AND slot_date >= (now() AT TIME ZONE $1::text)::date
   ORDER BY slot_date ASC, start_time ASC
@@ -32,7 +32,7 @@ function getBookingTimeZone() {
 function toDateKey(value) {
   if (value instanceof Date) {
     const parts = new Intl.DateTimeFormat("en-CA", {
-      timeZone: "Europe/Paris",
+      timeZone: DEFAULT_TIME_ZONE,
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
@@ -72,7 +72,7 @@ function isValidTime(time) {
 
 function mapSlot(row) {
   return {
-    id: Number(row.id),
+    id: String(row.id),
     date: toDateKey(row.slot_date),
     startTime: toTimeKey(row.start_time),
     endTime: toTimeKey(row.end_time),
@@ -143,7 +143,7 @@ export async function countActiveBookingSlots() {
   const { rows } = await queryDatabase(
     `
       SELECT COUNT(*)::int AS count
-      FROM booking_slots
+      FROM booking_slots_legacy
       WHERE enabled = true
         AND slot_date >= (now() AT TIME ZONE $1::text)::date
     `,
@@ -155,7 +155,7 @@ export async function countActiveBookingSlots() {
 export async function getBookingSlots() {
   const { rows } = await queryDatabase(`
     SELECT ${BOOKING_SLOT_COLUMNS}
-    FROM booking_slots
+    FROM booking_slots_legacy
     ORDER BY slot_date ASC, start_time ASC
   `);
   return rows.map(mapSlot);
@@ -171,7 +171,7 @@ export async function createBookingSlot(payload) {
   const { date, startTime, endTime, enabled = true } = normalized.value;
   const { rows } = await queryDatabase(
     `
-      INSERT INTO booking_slots (slot_date, start_time, end_time, enabled)
+      INSERT INTO booking_slots_legacy (slot_date, start_time, end_time, enabled)
       VALUES ($1::date, $2::time, $3::time, $4::boolean)
       RETURNING ${BOOKING_SLOT_COLUMNS}
     `,
@@ -182,46 +182,51 @@ export async function createBookingSlot(payload) {
 }
 
 export async function updateBookingSlot(id, payload) {
-  const slotId = Number(id);
-
-  if (!Number.isInteger(slotId) || slotId <= 0) {
+  const slotId = sanitize(id);
+  if (!/^[1-9]\d*$/.test(slotId)) {
     return { error: "L'identifiant du créneau est invalide." };
   }
 
-  const normalized = normalizeSlotInput(payload, { partial: true });
+  const { rows: existingRows } = await queryDatabase(
+    `SELECT ${BOOKING_SLOT_COLUMNS} FROM booking_slots_legacy WHERE id = $1`,
+    [Number(slotId)],
+  );
+  if (!existingRows[0]) {
+    return { error: "Le créneau est introuvable.", statusCode: 404 };
+  }
+  const existing = mapSlot(existingRows[0]);
+  const normalized = normalizeSlotInput(
+    {
+      ...payload,
+      currentStartTime: existing.startTime,
+      currentEndTime: existing.endTime,
+    },
+    { partial: true },
+  );
 
   if (normalized.error) {
     return { error: normalized.error };
   }
 
-  const fields = [];
-  const values = [];
-
-  for (const [column, key] of [
-    ["slot_date", "date"],
-    ["start_time", "startTime"],
-    ["end_time", "endTime"],
-    ["enabled", "enabled"],
-  ]) {
-    if (Object.hasOwn(normalized.value, key)) {
-      values.push(normalized.value[key]);
-      fields.push(`${column} = $${values.length}`);
-    }
-  }
-
-  if (fields.length === 0) {
+  if (Object.keys(normalized.value).length === 0) {
     return { error: "Aucune modification n'a été fournie." };
   }
 
-  values.push(slotId);
+  const date = normalized.value.date ?? existing.date;
+  const startTime = normalized.value.startTime ?? existing.startTime;
+  const endTime = normalized.value.endTime ?? existing.endTime;
+  const enabled = normalized.value.enabled ?? existing.enabled;
   const { rows } = await queryDatabase(
     `
-      UPDATE booking_slots
-      SET ${fields.join(", ")}
-      WHERE id = $${values.length}
+      UPDATE booking_slots_legacy
+      SET slot_date = $1::date,
+          start_time = $2::time,
+          end_time = $3::time,
+          enabled = $4::boolean
+      WHERE id = $5
       RETURNING ${BOOKING_SLOT_COLUMNS}
     `,
-    values,
+    [date, startTime, endTime, enabled, Number(slotId)],
   );
 
   if (!rows[0]) {
@@ -232,14 +237,13 @@ export async function updateBookingSlot(id, payload) {
 }
 
 export async function deleteBookingSlot(id) {
-  const slotId = Number(id);
-
-  if (!Number.isInteger(slotId) || slotId <= 0) {
+  const slotId = sanitize(id);
+  if (!/^[1-9]\d*$/.test(slotId)) {
     return { error: "L'identifiant du créneau est invalide." };
   }
 
-  const { rowCount } = await queryDatabase("DELETE FROM booking_slots WHERE id = $1", [
-    slotId,
+  const { rowCount } = await queryDatabase("DELETE FROM booking_slots_legacy WHERE id = $1", [
+    Number(slotId),
   ]);
 
   if (rowCount === 0) {

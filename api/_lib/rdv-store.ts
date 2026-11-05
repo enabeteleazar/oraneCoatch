@@ -14,10 +14,17 @@ const versCreneau = (l: Ligne): Creneau => ({
 const COLONNES = "id, starts_at, ends_at, slot_type";
 
 /** Créneaux commençant entre deux instants (ISO), triés par date. `libresDeVerrou` masque ceux en cours de réservation. */
-export async function lireCreneauxEntre(debutIso: string, finIso: string, libresDeVerrou = false): Promise<Creneau[]> {
+export async function lireCreneauxEntre(
+  debutIso: string,
+  finIso: string,
+  libresDeVerrou = false,
+  actifsSeulement = false,
+): Promise<Creneau[]> {
   const lignes = await requete(
     `SELECT ${COLONNES} FROM booking_slots
-     WHERE starts_at >= $1 AND starts_at < $2 ${libresDeVerrou ? "AND (claimed_until IS NULL OR claimed_until < now())" : ""}
+     WHERE starts_at >= $1 AND starts_at < $2
+       ${actifsSeulement ? "AND enabled = true" : ""}
+       ${libresDeVerrou ? "AND (claimed_until IS NULL OR claimed_until < now())" : ""}
      ORDER BY starts_at`,
     [debutIso, finIso],
   );
@@ -27,9 +34,12 @@ export async function lireCreneauxEntre(debutIso: string, finIso: string, libres
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const idValide = (id: string) => UUID.test(id);
 
-export async function lireCreneau(id: string): Promise<Creneau | null> {
+export async function lireCreneau(id: string, inclureInactif = false): Promise<Creneau | null> {
   if (!idValide(id)) return null;
-  const lignes = await requete(`SELECT ${COLONNES} FROM booking_slots WHERE id = $1`, [id]);
+  const lignes = await requete(
+    `SELECT ${COLONNES} FROM booking_slots WHERE id = $1 ${inclureInactif ? "" : "AND enabled = true"}`,
+    [id],
+  );
   return lignes[0] ? versCreneau(lignes[0]) : null;
 }
 

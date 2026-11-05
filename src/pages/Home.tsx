@@ -267,16 +267,7 @@ export default function Home() {
                   <ArrowUpRight className="ml-auto text-primary" size={18} />
                 </a>
               )}
-              <a href={externalSite} target="_blank" rel="noreferrer" className="group mt-6 flex items-center gap-4 transition-colors hover:text-primary">
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#e7e5d7] text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground"><ArrowUpRight size={19} strokeWidth={1.6} /></span>
-                <span className="min-w-0">
-                  <span className="block text-xs text-muted-foreground">Sur le site</span>
-                  <span className="mt-1 block break-all text-[.91rem] font-medium sm:text-base">orane-coach-therapeutique.fr</span>
-                </span>
-                <ArrowUpRight className="ml-auto shrink-0 text-primary" size={18} />
-              </a>
-              <p className="mt-8 border-t border-[#ded9c9] pt-5 text-xs leading-relaxed text-muted-foreground">Rendez-vous en ligne ou par téléphone.</p>
-            </motion.div>
+              </motion.div>
           </div>
           <div className="relative mx-auto mt-16 max-w-[1120px] px-6 md:mt-20 md:px-10">
             <ContactForm />

@@ -22,7 +22,7 @@ export async function GET() {
   try {
     const debut = new Date(Date.now() + delaiMs()).toISOString();
     const fin = new Date(Date.now() + HORIZON_JOURS * 86_400_000).toISOString();
-    const creneaux = await lireCreneauxEntre(debut, fin, true);
+    const creneaux = await lireCreneauxEntre(debut, fin, true, true);
     if (creneaux.length === 0) return json({ creneaux: [], reservationDisponible: true, ...base });
 
     const occupees = await occupations(creneaux[0].debut, creneaux[creneaux.length - 1].fin);

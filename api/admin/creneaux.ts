@@ -21,7 +21,7 @@ export async function GET(request: Request) {
     await purgerAnciensCreneaux().catch(() => undefined);
     const depuis = new Date(Date.now() - 24 * 3_600_000).toISOString();
     const jusqua = new Date(Date.now() + 180 * 86_400_000).toISOString();
-    const creneaux = await lireCreneauxEntre(depuis, jusqua);
+    const creneaux = await lireCreneauxEntre(depuis, jusqua, false, true);
 
     let agenda: EvenementAgenda[] | null = null;
     let agendaErreur: string | null = null;
