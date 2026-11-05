@@ -63,13 +63,13 @@ export default function Home() {
             </span>
           </a>
 
-          <nav aria-label="Navigation principale" className="hidden items-center gap-9 md:flex">
-            {navItems.map((item) => item.page ? <Link key={item.href} href={item.href} className="nav-link text-[.78rem] tracking-[.025em] text-foreground/75 transition-colors hover:text-primary">{item.label}</Link> : <a key={item.href} href={item.href} className="nav-link text-[.78rem] tracking-[.025em] text-foreground/75 transition-colors hover:text-primary">{item.label}</a>)}
-            <a href={phone} className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-[.76rem] font-medium text-primary-foreground transition duration-300 hover:-translate-y-0.5 hover:bg-[#4f5940] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
+          <nav aria-label="Navigation principale" className="hidden items-center gap-2 md:flex">
+            {navItems.map((item) => item.page ? <Link key={item.href} href={item.href} className="nav-link inline-flex whitespace-nowrap rounded-full bg-white px-4 py-2.5 text-[.78rem] tracking-[.025em] text-foreground transition-colors hover:text-primary">{item.label}</Link> : <a key={item.href} href={item.href} className="nav-link inline-flex whitespace-nowrap rounded-full bg-white px-4 py-2.5 text-[.78rem] tracking-[.025em] text-foreground transition-colors hover:text-primary">{item.label}</a>)}
+            <a href={phone} className="inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-primary px-5 py-3 text-[.76rem] font-medium text-primary-foreground transition duration-300 hover:-translate-y-0.5 hover:bg-[#4f5940] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
               <Phone size={14} /> Appeler ORANE
             </a>
           </nav>
-          <button type="button" aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"} aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)} className="flex h-11 w-11 items-center justify-center rounded-full border border-primary/25 text-primary md:hidden">
+          <button type="button" aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"} aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)} className="flex h-11 w-11 items-center justify-center rounded-full border border-primary/25 bg-white text-primary md:hidden">
             {menuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
