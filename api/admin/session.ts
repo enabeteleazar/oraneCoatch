@@ -61,8 +61,8 @@ export async function POST(request: Request) {
   if (verifierMotDePasse(saisi)) {
     try {
       await supprimer(cle);
-    } catch {
-      /* sans conséquence */
+    } catch (erreur) {
+      console.warn("Réinitialisation du compteur de tentatives impossible", erreur);
     }
     return json({ authentifie: true }, { headers: { "Set-Cookie": cookieSession(request, creerJeton(motDePasse)) } });
   }
