@@ -1,13 +1,35 @@
 {
-  "installCommand": "npm install",
-  "buildCommand": "npm run build",
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "buildCommand": "pnpm build",
   "outputDirectory": "dist/public",
-  "devCommand": "npm run dev",
-  "framework": "vite",
   "rewrites": [
     {
-      "source": "/dashboard",
-      "destination": "/index.html"
+      "source": "/api/admin/pricing-plans/:id",
+      "destination": "/api/admin/pricing-plans?__admin_route=item&__admin_id=:id"
+    },
+    {
+      "source": "/api/admin/booking-slots/:id",
+      "destination": "/api/admin/booking-slots?__admin_route=item&__admin_id=:id"
+    },
+    {
+      "source": "/api/bookings/availability",
+      "destination": "/api/bookings?__booking_route=availability"
+    },
+    {
+      "source": "/api/bookings/health",
+      "destination": "/api/bookings?__booking_route=health"
+    },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/admin",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "Cache-Control", "value": "no-store" }
+      ]
     }
   ]
 }

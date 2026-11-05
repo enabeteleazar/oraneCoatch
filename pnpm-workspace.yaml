@@ -1,0 +1,7 @@
+allowBuilds:
+  esbuild: true
+
+minimumReleaseAge: 1440
+
+overrides:
+  rollup: 4.64.7

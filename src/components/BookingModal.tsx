@@ -13,7 +13,7 @@ const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as
   | undefined;
 
 type BookingSlot = {
-  id: number;
+  id: string;
   start: string;
   end: string;
   startLabel: string;

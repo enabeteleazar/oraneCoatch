@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
 type AdminSlot = {
-  id: number;
+  id: string;
   date: string;
   startTime: string;
   endTime: string;
@@ -47,7 +47,7 @@ export default function AdminBookingSlots({
   const [authenticated, setAuthenticated] = useState(Boolean(adminPassword ?? getStoredPassword()));
   const [slots, setSlots] = useState<AdminSlot[]>([]);
   const [newSlot, setNewSlot] = useState<SlotForm>(emptyForm);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [editingSlot, setEditingSlot] = useState<SlotForm>(emptyForm);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -133,7 +133,7 @@ export default function AdminBookingSlots({
     }
   }
 
-  async function saveSlot(id: number, payload: SlotForm) {
+  async function saveSlot(id: string, payload: SlotForm) {
     setSaving(true);
     setError(null);
     setMessage(null);
@@ -157,7 +157,7 @@ export default function AdminBookingSlots({
     }
   }
 
-  async function deleteSlot(id: number) {
+  async function deleteSlot(id: string) {
     setSaving(true);
     setError(null);
     setMessage(null);
